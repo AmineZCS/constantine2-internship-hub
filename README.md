@@ -1,6 +1,7 @@
-# Laravel Sanctum
+# Constantine2  Internship  Hub [REST API]
 
-This is a Laravel Sanctum project.
+
+This is a Laravel REST API of an internship management system
 
 ## Installation
 
