@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('bio')->nullable();
             $table->string('cv_path')->nullable();
             $table->string('photo_path')->nullable();
+            $table->string('phone_number')->nullable();
             $table->timestamps();
             $table->foreign('department_id')->references('id')->on('departments')->onDelete('cascade')->onUpdate('cascade');
 
