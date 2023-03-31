@@ -2,6 +2,9 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
+use App\Models\User;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,13 +17,13 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+Route::middleware('auth:sanctum','student')->get('/user', function (Request $request) {
     return $request->user();
 });
 
 // login and return token
 
-Route::post('/sanctum/token', function (Request $request) {
+Route::post('/login', function (Request $request) {
     // $request->validate([
     //     'email' => 'required|email',
     //     'password' => 'required',
