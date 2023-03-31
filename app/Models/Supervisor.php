@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Supervisor extends Model
 {
     use HasFactory;
+    protected $table = 'supervisors';
     protected $fillable = [
         'fname',
         'lname',

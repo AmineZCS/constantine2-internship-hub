@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('supervisors', function (Blueprint $table) {
-            $table->unsignedBigInteger('id')->primary();
+            $table->id();
             $table->foreign('id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
             $table->string('fname');
             $table->string('lname');
@@ -36,9 +36,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('supervisors');
-        Schema::table('supervisors', function (Blueprint $table) {
-            $table->dropForeign(['id']);
-            $table->dropForeign(['company_id']);
-        });
+
     }
 };

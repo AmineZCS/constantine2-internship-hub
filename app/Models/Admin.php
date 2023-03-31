@@ -1,4 +1,6 @@
 <?php
+// scan if there's any error in the code
+
 
 namespace App\Models;
 
@@ -8,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 class Admin extends Model
 {
     use HasFactory;
+    protected $table = 'admins';
     protected $fillable = [
         'fname',
         'lname',

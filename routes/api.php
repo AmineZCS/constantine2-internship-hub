@@ -5,6 +5,11 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use App\Models\User;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\StudentController;
+use App\Http\Controllers\SupervisorController;
+use App\Http\Controllers\AdminController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -17,27 +22,18 @@ use App\Models\User;
 |
 */
 
-Route::middleware('auth:sanctum','student')->get('/user', function (Request $request) {
-    return $request->user();
-});
+//all roles can access these routes
 
 // login and return token
+Route::post('/login', [AuthController::class, 'login']);
 
-Route::post('/login', function (Request $request) {
-    // $request->validate([
-    //     'email' => 'required|email',
-    //     'password' => 'required',
-    //     'device_name' => 'required',
-    // ]);
+//logout and revoke token
+Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
 
-    $user = User::where('email', $request->email)->first();
+//get profile infos based on the logged in user
+Route::middleware('auth:sanctum')->get('/user', [AuthController::class, 'getProfile']);
 
-    if (! $user || ! Hash::check($request->password, $user->password)) {
-        throw ValidationException::withMessages([
-            'email' => ['The provided credentials are incorrect.'],
-        ]);
-    }
 
-     return $user->createToken($request->email)->plainTextToken;
-
-});
+// Route::middleware('auth:sanctum','student')->get('/user', function (Request $request) {
+//     return $request->user();
+// });
