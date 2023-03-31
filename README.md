@@ -7,7 +7,7 @@ This is a Laravel REST API of an internship management system
 
 1. Clone the repository: 
 ```
-git clone https://github.com/username/laravel-project.git
+git clone https://github.com/AmineZCS/constantine2-internship-hub
 ```
 2. Install dependencies: 
 ```
