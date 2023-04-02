@@ -28,7 +28,7 @@ use App\Http\Controllers\AdminController;
 Route::post('/login', [AuthController::class, 'login']);
 
 //logout and revoke token
-Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
+Route::middleware('auth:sanctum')->get('/logout', [AuthController::class, 'logout']);
 
 //get profile infos based on the logged in user
 Route::middleware('auth:sanctum')->get('/user', [AuthController::class, 'getProfile']);

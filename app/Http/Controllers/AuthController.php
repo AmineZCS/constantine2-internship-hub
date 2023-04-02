@@ -12,6 +12,14 @@ use App\Models\Admin;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
+// generate a documentation for this controller
+/**
+ * @group Authentication
+ *
+ * APIs for authentication
+ */
+
+
 
 class AuthController extends Controller
 {
@@ -30,6 +38,7 @@ class AuthController extends Controller
             'message' => 'User not found'
         ], 404);
     }
+
     // check if password is correct
     if (!Hash::check($request->password, $user->password)) {
         return response()->json([
@@ -81,5 +90,7 @@ class AuthController extends Controller
                 break;
         }
     }
+
+
 
 }

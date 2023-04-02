@@ -4,7 +4,8 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-
+use Illuminate\Support\Facades\DB;
+use App\Models\User;
 class UserSeeder extends Seeder
 {
     /**
@@ -13,15 +14,19 @@ class UserSeeder extends Seeder
     public function run(): void
     {
 
-        // \App\Models\User::factory(1)->create([
-        //     'email' => 'test@example.com',
+        // User::create([
+        //     'email' => 'test4@gmail.com',
         //     'password' => bcrypt('password'),
         // ]);
+
+        User::factory()->count(1)->create();
+
+
         // create a new user with the email and password without using the User model
-        \DB::table('users')->insert([
-            'email' => 'test@example.com',
-            'password' => bcrypt('password'),
-        ]);
+        // \DB::table('users')->insert([
+        //     'email' => 'test4@example.com',
+        //     'password' => bcrypt('password'),
+        // ]);
 
 
     }
