@@ -13,11 +13,11 @@ git clone https://github.com/AmineZCS/constantine2-internship-hub
 ```
 composer install
 ```
-3. Create a copy of the `.env.example` file and rename it to `.env`:
+3. Create a copy of the `.env.example` file and rename it to `.env` and update the environment variables as necessary:
 ```
 cp .env.example .env
 ```
-. Update the environment variables as necessary.
+
 4. Generate the application key: 
 ```
 php artisan key:generate
