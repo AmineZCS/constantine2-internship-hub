@@ -36,3 +36,7 @@ class UserFactory extends Factory
         ]);
     }
 }
+// command to create models and factories for all tables in the database (except migrations and pivot tables)
+
+
+
