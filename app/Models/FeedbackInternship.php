@@ -10,4 +10,5 @@ class FeedbackInternship extends Model
     use HasFactory;
     protected $table = 'feedback_internship';
     protected $guarded = [];
+    
 }

@@ -36,4 +36,17 @@ class Company extends Model
     use HasFactory;
     protected $table = 'companies';
     protected $guarded = [];
+    public function internships()
+    {
+        return $this->hasMany(Internship::class, 'company_id', 'id');
+    }
+    public function applications()
+    {
+        return $this->hasManyThrough(Application::class, Internship::class, 'company_id', 'internship_id', 'id', 'id');
+    }
+    public function supervisors()
+    {
+        return $this->hasMany(Supervisor::class, 'company_id', 'id');
+    }
+    
 }

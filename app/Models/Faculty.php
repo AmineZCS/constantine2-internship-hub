@@ -28,4 +28,9 @@ class Faculty extends Model
     use HasFactory;
     protected $table = 'faculties';
     protected $guarded = [];
+    public function departments()
+    {
+        return $this->hasMany(Department::class, 'faculty_id', 'id');
+    }
+    
 }

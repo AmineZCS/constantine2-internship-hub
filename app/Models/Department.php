@@ -30,4 +30,17 @@ class Department extends Model
     use HasFactory;
     protected $table = 'departments';
     protected $guarded = [];
+    public function internships()
+    {
+        return $this->belongsToMany(Internship::class, 'internship_department', 'department_id', 'internship_id');
+    }
+    public function students()
+    {
+        return $this->hasMany(Student::class, 'department_id', 'id');
+    }
+    public function faculty()
+    {
+        return $this->belongsTo(Faculty::class, 'faculty_id', 'id');
+    }
+    
 }

@@ -44,4 +44,17 @@ class Internship extends Model
     use HasFactory;
     protected $table = 'internships';
     protected $guarded = [];
+    public function departments()
+    {
+        return $this->belongsToMany(Department::class, 'internship_department', 'internship_id', 'department_id');
+    }
+    public function company()
+    {
+        return $this->belongsTo(Company::class, 'company_id', 'id');
+    }
+    public function supervisor()
+    {
+        return $this->belongsTo(Supervisor::class, 'supervisor_id', 'id');
+    }
+
 }

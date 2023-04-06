@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('internships', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('department_id');
             $table->unsignedBigInteger('company_id');
             $table->unsignedBigInteger('supervisor_id');
             $table->string('position');
@@ -23,7 +22,6 @@ return new class extends Migration
             $table->text('requirements')->nullable();
             $table->date('start_date');
             $table->date('end_date');
-            $table->foreign('department_id')->references('id')->on('departments')->onDelete('cascade')->onUpdate('cascade');
             $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade')->onUpdate('cascade');
             $table->foreign('supervisor_id')->references('id')->on('supervisors')->onDelete('cascade')->onUpdate('cascade');
             $table->timestamps();

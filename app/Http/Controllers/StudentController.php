@@ -17,14 +17,17 @@ class StudentController extends Controller
 {
 
 
-    //get profile infos based on the logged in student
-    public function getStudentInfo($request)
+    // get all internships in the same department as the logged in student
+    public function getStudentInterns (Request $request)
     {
-        $student = Student::join('users', 'users.id', '=', 'students.user_id')
-            ->where('students.user_id', $request->user()->id)
-            ->select('students.*', 'users.email')
-            ->first();
-        return response()->json($student);
+        $user = $request->user();
+        $student = Student::where('user_id', $user->id)->first();
+        $department = Department::where('id', $student->department_id)->first();
+        $internships = Internship::join('internship_department', 'internship_department.internship_id', '=', 'internships.id')
+            ->where('internship_department.department_id', $department->id)
+            ->select('internships.*')
+            ->get();
+        return response()->json($internships);
     }
-    
+
 }

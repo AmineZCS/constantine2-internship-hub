@@ -43,4 +43,9 @@ class Admin extends Model
         'department_id',
         'phone_number',
     ];
+    public function department()
+    {
+        return $this->belongsTo(Department::class, 'department_id', 'id');
+    }
+
 }

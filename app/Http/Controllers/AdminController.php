@@ -29,14 +29,16 @@ class AdminController extends Controller
     }
 
     // get all internships in the same department as the logged in admin
-    public function getInterns (Request $request)
+    public function getDepartmentInterns (Request $request)
     {
         $user = $request->user();
         $admin = Admin::where('user_id', $user->id)->first();
         $department = Department::where('id', $admin->department_id)->first();
-        $internships = Internship::where('department_id', $department->id)->get();
+        $internships = Internship::join('internship_department', 'internship_department.internship_id', '=', 'internships.id')
+            ->where('internship_department.department_id', $department->id)
+            ->select('internships.*')
+            ->get();
         return response()->json($internships);
     }
-    
 
 }

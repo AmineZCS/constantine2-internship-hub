@@ -29,8 +29,6 @@ use App\Http\Controllers\NotificationController;
 Route::post('/login', [AuthController::class, 'login']);
 
 //logout and revoke token
-// this route is returning a 401 error
-
 Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
 
 //get profile infos based on the logged in user
@@ -48,8 +46,25 @@ Route::middleware('auth:sanctum','admin')->group(function () {
     // get all students in the same department as the logged in admin
     Route::get('/students', [AdminController::class, 'getStudents']);
     // get all interns in the same department as the logged in admin
-    Route::get('/interns', [AdminController::class, 'getInterns']);
-
+    Route::get('/departmentInterns', [AdminController::class, 'getDepartmentInterns']);
 });
 
 
+// ============================================================
+
+
+// student routes only
+Route::middleware('auth:sanctum','student')->group(function () {
+    // get all internships in the same department as the logged in student
+    Route::get('/studentInterns', [StudentController::class, 'getStudentInterns']);
+});
+
+// ============================================================
+
+
+
+// supervisor routes only
+Route::middleware('auth:sanctum','supervisor')->group(function () {
+    // create a new internship
+    Route::post('/internships', [SupervisorController::class, 'createInternship']);
+});

@@ -44,4 +44,17 @@ class Student extends Model
         'department_id',
         'phone_number',
     ];
+    public function department()
+    {
+        return $this->belongsTo(Department::class, 'department_id', 'id');
+    }
+    public function applications()
+    {
+        return $this->hasMany(Application::class, 'student_id', 'id');
+    }
+    public function internships()
+    {
+        return $this->hasManyThrough(Internship::class, Application::class, 'student_id', 'id', 'id', 'internship_id');
+    }
+    
 }

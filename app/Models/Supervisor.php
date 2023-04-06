@@ -43,4 +43,18 @@ class Supervisor extends Model
         'company_id',
         'phone_number',
     ];
+    public function company()
+    {
+        return $this->belongsTo(Company::class, 'company_id', 'id');
+    }
+    public function internships()
+    {
+        return $this->hasMany(Internship::class, 'supervisor_id', 'id');
+    }
+    public function applications()
+    {
+        return $this->hasManyThrough(Application::class, Internship::class, 'supervisor_id', 'internship_id', 'id', 'id');
+    }
+    
+
 }
