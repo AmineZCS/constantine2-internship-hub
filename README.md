@@ -1,7 +1,7 @@
 # Constantine2  Internship  Hub [REST API]
 
 
-This is a Laravel REST API of an internship management system
+This is a Laravel REST API of an internship management system developed specifically for University of Abdelhamid Mehri Constantine 2 students. The system aims to simplify the process of managing internships for students, by providing a centralized platform for searching, applying, and tracking their internships.
 
 ## Installation
 
