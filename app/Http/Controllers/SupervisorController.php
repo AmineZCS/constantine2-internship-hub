@@ -19,20 +19,24 @@ class SupervisorController extends Controller
     public function createInternship (Request $request)
     {
         $user = $request->user();
-        $supervisor = Supervisor::where('user_id', $user->id)->first();
+        $supervisor = Supervisor::where('id', $user->id)->first();
         $internship = Internship::create([
-            'title' => $request->title,
+            'position' => $request->position,
             'description' => $request->description,
+            'location' => $request->location,
             'supervisor_id' => $supervisor->id,
             'company_id' => $supervisor->company_id,
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
-            'status' => 'pending'
+            'status' => 'open'
         ]);
-        $departments_ids = $request->departments_ids;
-        foreach ($departments_ids as $department_id) {
-            $internship->departments()->attach($department_id);
+        $departments_abbreviations = $request->departments_abbreviations;
+        // loop through the array of departments_abbreviations find the department_id and create a new internship_department record
+        foreach ($departments_abbreviations as $department_abbreviation) {
+            $department = Department::where('abbreviation', $department_abbreviation)->first();
+            $internship->departments()->attach($department->id);
         }
+
         return response()->json($internship);
     }
 
