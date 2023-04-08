@@ -30,15 +30,15 @@ class SupervisorController extends Controller
             'end_date' => $request->end_date,
             'status' => 'open'
         ]);
-        $departments_abbreviations = $request->departments_abbreviations;
-        // loop through the array of departments_abbreviations find the department_id and create a new internship_department record
-        foreach ($departments_abbreviations as $department_abbreviation) {
-            $department = Department::where('abbreviation', $department_abbreviation)->first();
-            $internship->departments()->attach($department->id);
+        $departments_ids = $request->departments;
+        // loop through the array of departments ids  and create a new internship_department record
+        foreach ($departments_ids as $department_id) {
+            $internship->departments()->attach($department_id);
         }
 
         return response()->json($internship);
     }
+    // get
 
 }
 
