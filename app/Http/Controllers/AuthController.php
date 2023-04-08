@@ -59,37 +59,7 @@ class AuthController extends Controller
         return response()->json(['message' => 'Logged out']);
     }
 
-    //get profile informations based on the logged in user
-    public function getProfile(Request $request)
-    {
-        $role = $request->user()->role;
-        switch ($role) {
-            case 'admin':
-                $admin = Admin::join('users', 'users.id', '=', 'admins.id')
-                    ->where('admins.id', $request->user()->id)
-                    ->select('admins.*', 'users.email')
-                    ->first();
-                return response()->json($admin);
-                break;
-            case 'supervisor':
-                $supervisor = Supervisor::join('users', 'users.id', '=', 'supervisors.id')
-                    ->where('supervisors.id', $request->user()->id)
-                    ->select('supervisors.*', 'users.email')
-                    ->first();
-                return response()->json($supervisor);
-                break;
-            case 'student':
-                $student = Student::join('users', 'users.id', '=', 'students.id')
-                    ->where('students.id', $request->user()->id)
-                    ->select('students.*', 'users.email')
-                    ->first();
-                return response()->json($student);
-                break;
-            default:
-                return response()->json(['message' => 'No role found']);
-                break;
-        }
-    }
+
 
 
 
