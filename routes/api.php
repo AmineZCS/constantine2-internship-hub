@@ -10,6 +10,7 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\SupervisorController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\UsersController;
 use App\Http\Middleware\CorsMiddleware;
 
 
@@ -33,13 +34,16 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
 
 //get profile infos based on the logged in user
-Route::middleware('auth:sanctum')->get('/user', [AuthController::class, 'getProfile']);
+Route::middleware('auth:sanctum')->get('/user', [UsersController::class, 'getProfile']);
 
 // get notifications for the logged in user
 Route::middleware('auth:sanctum')->get('/notifications', [NotificationController::class, 'getNotifications']);
 
 // make all notifications as read for the logged in user
 Route::middleware('auth:sanctum')->post('/notifications/markAllAsRead', [NotificationController::class, 'markAllAsRead']);
+
+// get all departments in an array of objects
+Route::get('/departments', [UsersController::class, 'getDepartments']);
 
 
 //admin routes only
