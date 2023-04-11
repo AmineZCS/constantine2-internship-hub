@@ -40,5 +40,12 @@ class AdminController extends Controller
             ->get();
         return response()->json($internships);
     }
+    // get all admin default feedbacks
+    public function getAdminDefaultFeedbacks (Request $request)
+    {
+        $feedbacks = Feedback::where('feedback_type', 'admin')->where('is_default', true)->get();
+        return response()->json($feedbacks);
+    }
+
 
 }

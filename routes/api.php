@@ -52,6 +52,8 @@ Route::middleware('auth:sanctum','admin')->group(function () {
     Route::get('/students', [AdminController::class, 'getStudents']);
     // get all interns in the same department as the logged in admin
     Route::get('/departmentInterns', [AdminController::class, 'getDepartmentInterns']);
+    // get all default admin feedbacks
+    Route::get('/adminDefaultFeedbacks', [AdminController::class, 'getAdminDefaultFeedbacks']);
 });
 
 
@@ -76,4 +78,8 @@ Route::middleware('auth:sanctum','student')->group(function () {
 Route::middleware('auth:sanctum','supervisor')->group(function () {
     // create a new internship
     Route::post('/internships', [SupervisorController::class, 'createInternship']);
+    // get all internships created by the logged in supervisor
+    Route::get('/internships', [SupervisorController::class, 'getSupervisorInterns']);
+    // get all default supervisor feedbacks
+    Route::get('/supervisorDefaultFeedbacks', [SupervisorController::class, 'getSupervisorDefaultFeedbacks']);
 });
