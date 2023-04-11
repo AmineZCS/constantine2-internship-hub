@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('feedback_internship', function (Blueprint $table) {
+        Schema::create('feedback_application', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('feedback_id');
-            $table->unsignedBigInteger('internship_id');
+            $table->unsignedBigInteger('application_id');
             $table->foreign('feedback_id')->references('id')->on('feedbacks')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('internship_id')->references('id')->on('internships')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('application_id')->references('id')->on('applications')->onDelete('cascade')->onUpdate('cascade');
             $table->timestamps();
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('feedback_internship');
+        Schema::dropIfExists('feedback_application');
     }
 };

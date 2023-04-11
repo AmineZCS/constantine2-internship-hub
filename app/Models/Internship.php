@@ -56,5 +56,10 @@ class Internship extends Model
     {
         return $this->belongsTo(Supervisor::class, 'supervisor_id', 'id');
     }
+    public function applications()
+    {
+        return $this->hasMany(Application::class, 'internship_id', 'id');
+    }
+
 
 }

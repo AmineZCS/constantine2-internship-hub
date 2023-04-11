@@ -62,6 +62,10 @@ Route::middleware('auth:sanctum','admin')->group(function () {
 Route::middleware('auth:sanctum','student')->group(function () {
     // get all internships in the same department as the logged in student
     Route::get('/studentInterns', [StudentController::class, 'getStudentInterns']);
+    // apply for an internship
+    Route::post('/apply', [StudentController::class, 'applyForInternship']);
+    // get all applied internships
+    Route::get('/appliedInternships', [StudentController::class, 'getAppliedInternships']);
 });
 
 // ============================================================
