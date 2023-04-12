@@ -12,6 +12,8 @@ use App\Models\Admin;
 use App\Models\Department;
 use App\Models\Company;
 use App\Models\Internship;
+use App\Models\Application;
+use App\Models\Feedback;
 
 class StudentController extends Controller
 {
@@ -50,12 +52,16 @@ class StudentController extends Controller
         $internships = $student->internships()->get();
         return response()->json($internships);
     }
-    // get all applications for the logged in student
-    public function getApplications (Request $request)
+    // get all applications with company and internship details for the logged in student
+    public function getStudentApplications (Request $request)
     {
         $user = $request->user();
         $student = Student::where('id', $user->id)->first();
-        $applications = $student->applications()->get();
+        $applications = Application::join('internships', 'internships.id', '=', 'applications.internship_id')
+            ->join('companies', 'companies.id', '=', 'internships.company_id')
+            ->where('applications.student_id', $student->id)
+            ->select('applications.*', 'companies.name as company_name', 'internships.position as internship_position')
+            ->get();
         return response()->json($applications);
     }
 

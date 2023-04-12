@@ -46,13 +46,27 @@ class SupervisorController extends Controller
         $internships = Internship::where('supervisor_id', $supervisor->id)->get();
         return response()->json($internships);
     }
-    // get all default suppervisor feedbacks
-    public function getSupervisorDefaultFeedbacks (Request $request)
+    // create supervisor feedback
+    public function createSupervisorFeedback (Request $request)
     {
-        $feedbacks = Feedback::where('feedback_type', 'supervisor')->where('is_default', true)->get();
+        $user = $request->user();
+        $feedback = new Feedback();
+        $feedback->feedback_type = 'supervisor';
+        $feedback->sender_id = $user->id;
+        $feedback->message = $request->message;
+        $feedback->is_default = $request->is_default;
+        $feedback->save();
+        return response()->json($feedback);
+    }
+    // get all suppervisor feedbacks (default and custom)
+    public function getSupervisorFeedbacks (Request $request)
+    {
+        $user = $request->user();
+        $supervisor = Supervisor::where('id', $user->id)->first();
+        $feedbacks = Feedback::where('feedback_type', 'supervisor')->where('sender_id', $supervisor->id)->orWhere('is_default', true)->get();
         return response()->json($feedbacks);
     }
-    
+
 
 
 }

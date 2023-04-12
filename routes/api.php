@@ -52,8 +52,12 @@ Route::middleware('auth:sanctum','admin')->group(function () {
     Route::get('/students', [AdminController::class, 'getStudents']);
     // get all interns in the same department as the logged in admin
     Route::get('/departmentInterns', [AdminController::class, 'getDepartmentInterns']);
-    // get all default admin feedbacks
-    Route::get('/adminDefaultFeedbacks', [AdminController::class, 'getAdminDefaultFeedbacks']);
+    // get all admin feedbacks
+    Route::get('/adminFeedbacks', [AdminController::class, 'getAdminFeedbacks']);
+    // get all applications in the same department as the logged in admin
+    Route::get('/departmentApplications', [AdminController::class, 'getDepartmentApplications']);
+    // create a new admin feedback
+    Route::post('/adminFeedbacks', [AdminController::class, 'createAdminFeedback']);
 });
 
 
@@ -66,8 +70,8 @@ Route::middleware('auth:sanctum','student')->group(function () {
     Route::get('/studentInterns', [StudentController::class, 'getStudentInterns']);
     // apply for an internship
     Route::post('/apply', [StudentController::class, 'applyForInternship']);
-    // get all applied internships
-    Route::get('/appliedInternships', [StudentController::class, 'getAppliedInternships']);
+    // get all applications for the logged in student
+    Route::get('/applications', [StudentController::class, 'getStudentApplications']);
 });
 
 // ============================================================
@@ -80,6 +84,8 @@ Route::middleware('auth:sanctum','supervisor')->group(function () {
     Route::post('/internships', [SupervisorController::class, 'createInternship']);
     // get all internships created by the logged in supervisor
     Route::get('/internships', [SupervisorController::class, 'getSupervisorInterns']);
-    // get all default supervisor feedbacks
-    Route::get('/supervisorDefaultFeedbacks', [SupervisorController::class, 'getSupervisorDefaultFeedbacks']);
+    // get all supervisor feedbacks
+    Route::get('/supervisorFeedbacks', [SupervisorController::class, 'getSupervisorFeedbacks']);
+    // create a new supervisor feedback
+    Route::post('/supervisorFeedbacks', [SupervisorController::class, 'createSupervisorFeedback']);
 });

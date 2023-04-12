@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('feedbacks', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('sender_id');
+            $table->unsignedBigInteger('sender_id')->nullable();
             $table->string('message');
-            $table->boolean('is_default')->default(false);
+            $table->boolean('is_default')->default(true);
             $table->enum('feedback_type', ['admin', 'supervisor']);
             $table->foreign('sender_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
             $table->timestamps();

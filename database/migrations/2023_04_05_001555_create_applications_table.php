@@ -19,6 +19,8 @@ class CreateApplicationsTable extends Migration
             $table->foreignId('internship_id')->constrained()->onDelete('cascade');
             $table->enum('admin_status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->enum('supervisor_status', ['pending', 'approved', 'rejected'])->default('pending');
+            // num_attempts is used to keep track of how many times the student has applied for the same internship
+            $table->integer('num_attempts')->default(1);
             $table->timestamps();
             $table->unique(['student_id', 'internship_id']);
         });
