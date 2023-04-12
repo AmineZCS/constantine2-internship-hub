@@ -14,6 +14,7 @@ use App\Models\Company;
 use App\Models\Internship;
 use App\Models\Application;
 use App\Models\Feedback;
+use App\Models\InternshipDepartment;
 
 class AdminController extends Controller
 {
@@ -34,7 +35,7 @@ class AdminController extends Controller
     public function getDepartmentInterns (Request $request)
     {
         $user = $request->user();
-        $admin = Admin::where('user_id', $user->id)->first();
+        $admin = Admin::where('id', $user->id)->first();
         $department = Department::where('id', $admin->department_id)->first();
         $internships = Internship::join('internship_department', 'internship_department.internship_id', '=', 'internships.id')
             ->where('internship_department.department_id', $department->id)
