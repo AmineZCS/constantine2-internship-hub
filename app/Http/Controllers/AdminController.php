@@ -15,6 +15,7 @@ use App\Models\Internship;
 use App\Models\Application;
 use App\Models\Feedback;
 use App\Models\InternshipDepartment;
+use App\Models\FeedbackApplication;
 
 class AdminController extends Controller
 {
@@ -105,6 +106,11 @@ class AdminController extends Controller
     // reject application and add the feedback to feedback_application table
     public function rejectApplication (Request $request)
     {
+        // validate inputs
+        $this->validate($request, [
+            'feedback_id' => 'required|integer',
+            'application_id' => 'required|integer',
+        ]);
         $user = $request->user();
         $admin = Admin::where('id', $user->id)->first();
         $department = Department::where('id', $admin->department_id)->first();
@@ -112,13 +118,14 @@ class AdminController extends Controller
         $internship = Internship::where('id', $application->internship_id)->first();
         $internship_department = InternshipDepartment::where('internship_id', $internship->id)->where('department_id', $department->id)->first();
         if ($internship_department) {
+
             if ($application->admin_status == 'pending') {
                 $application->admin_status = 'rejected';
-                $application->save();
                 $feedback_application = new FeedbackApplication();
                 $feedback_application->application_id = $application->id;
                 $feedback_application->feedback_id = $request->feedback_id;
                 $feedback_application->save();
+                $application->save();
                 return response()->json($application);
             } else {
                 return response()->json(['error' => 'Application is not waiting for approval'], 400);
