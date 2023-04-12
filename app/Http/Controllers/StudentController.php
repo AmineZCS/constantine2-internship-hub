@@ -31,18 +31,32 @@ class StudentController extends Controller
             ->get();
         return response()->json($internships);
     }
-    // apply for an internship
+    // apply for an internship only if it's in the same department as the logged in student
     public function applyForInternship (Request $request)
     {
         $user = $request->user();
         $student = Student::where('id', $user->id)->first();
-        $internship = Internship::where('id', $request->internship_id)->first();
-        // create an application record
-        $application = $student->applications()->create([
-            'internship_id' => $internship->id,
-            'student_id' => $student->id
-        ]);
-        return response()->json($application);
+        $department = Department::where('id', $student->department_id)->first();
+        $internship = Internship::join('internship_department', 'internship_department.internship_id', '=', 'internships.id')
+            ->where('internship_department.department_id', $department->id)
+            ->where('internships.id', $request->internship_id)
+            ->first();
+        if ($internship) {
+            // create an application record
+            $application = $student->applications()->create([
+                'internship_id' => $internship->internship_id,
+                'student_id' => $student->id
+            ]);
+            // get the application record with company and internship details
+            $application = Application::join('internships', 'internships.id', '=', 'applications.internship_id')
+                ->join('companies', 'companies.id', '=', 'internships.company_id')
+                ->where('applications.id', $application->id)
+                ->select('applications.*', 'companies.name as company_name', 'internships.position as internship_position')
+                ->first();
+            return response()->json($application);
+        }else {
+            return response()->json(['error' => 'Internship is not for your department'], 400);
+        }
     }
     // get all applied internships
     public function getAppliedInternships (Request $request)
