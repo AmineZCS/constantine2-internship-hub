@@ -61,21 +61,79 @@ class AdminController extends Controller
         $feedbacks = Feedback::where('feedback_type', 'admin')->where('sender_id', $user->id)->orWhere('is_default', true)->get();
         return response()->json($feedbacks);
     }
-    // get all applications in the same department as the logged in admin with company and internship details (company name and id, internship position)
-
+    // get all applications in the same department as the logged in admin with company,student and internship details (company name and id, internship position and id, student name and id)
     public function getDepartmentApplications (Request $request)
     {
         $user = $request->user();
         $admin = Admin::where('id', $user->id)->first();
         $department = Department::where('id', $admin->department_id)->first();
         $applications = Application::join('internships', 'internships.id', '=', 'applications.internship_id')
-            ->join('companies', 'companies.id', '=', 'internships.company_id')
+
             ->join('internship_department', 'internship_department.internship_id', '=', 'internships.id')
+            ->join('companies', 'companies.id', '=', 'internships.company_id')
+            ->join('students', 'students.id', '=', 'applications.student_id')
+            ->join('users', 'users.id', '=', 'students.id')
             ->where('internship_department.department_id', $department->id)
-            ->select('applications.*', 'companies.name as company_name', 'internships.position as internship_position', 'companies.id as company_id')
+            ->select('applications.*', 'companies.name as company_name', 'companies.id as company_id', 'internships.position as internship_position', 'internships.id as internship_id', 'students.fname as student_fname','students.lname as student_lname','users.email as student_email')
             ->get();
         return response()->json($applications);
     }
+    // approve application
+    // check if the application is for in internship in the same department as the logged in admin then check if the application is pending and update the admin_status to approved else return error message for every case
+    public function approveApplication (Request $request)
+    {
+        $user = $request->user();
+        $admin = Admin::where('id', $user->id)->first();
+        $department = Department::where('id', $admin->department_id)->first();
+        $application = Application::where('id', $request->application_id)->first();
+        $internship = Internship::where('id', $application->internship_id)->first();
+        $internship_department = InternshipDepartment::where('internship_id', $internship->id)->where('department_id', $department->id)->first();
+        if ($internship_department) {
+            if ($application->admin_status == 'pending') {
+                $application->admin_status = 'approved';
+                $application->save();
+                return response()->json($application);
+            } else {
+                return response()->json(['error' => 'Application is not waiting for approval'], 400);
+            }
+
+        } else {
+            return response()->json(['error' => 'Application is not for an internship in your department'], 400);
+        }
+    }
+    // reject application and add the feedback to feedback_application table
+    public function rejectApplication (Request $request)
+    {
+        $user = $request->user();
+        $admin = Admin::where('id', $user->id)->first();
+        $department = Department::where('id', $admin->department_id)->first();
+        $application = Application::where('id', $request->application_id)->first();
+        $internship = Internship::where('id', $application->internship_id)->first();
+        $internship_department = InternshipDepartment::where('internship_id', $internship->id)->where('department_id', $department->id)->first();
+        if ($internship_department) {
+            if ($application->admin_status == 'pending') {
+                $application->admin_status = 'rejected';
+                $application->save();
+                $feedback_application = new FeedbackApplication();
+                $feedback_application->application_id = $application->id;
+                $feedback_application->feedback_id = $request->feedback_id;
+                $feedback_application->save();
+                return response()->json($application);
+            } else {
+                return response()->json(['error' => 'Application is not waiting for approval'], 400);
+            }
+
+        } else {
+            return response()->json(['error' => 'Application is not for an internship in your department'], 400);
+        }
+    }
+
+
+
+
+
+
+
 
 
 

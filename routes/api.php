@@ -58,6 +58,14 @@ Route::middleware('auth:sanctum','admin')->group(function () {
     Route::get('/departmentApplications', [AdminController::class, 'getDepartmentApplications']);
     // create a new admin feedback
     Route::post('/adminFeedbacks', [AdminController::class, 'createAdminFeedback']);
+    // approve an application
+    Route::post('/adminApprove', [AdminController::class, 'approveApplication']);
+    // reject an application
+    Route::post('/adminReject', [AdminController::class, 'rejectApplication']);
+
+
+
+
 });
 
 
