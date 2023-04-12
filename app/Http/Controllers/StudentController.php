@@ -78,5 +78,22 @@ class StudentController extends Controller
             ->get();
         return response()->json($applications);
     }
+    // get all feedbacks for the given application
+    public function getApplicationFeedbacks (Request $request)
+    {
+        $user = $request->user();
+        $student = Student::where('id', $user->id)->first();
+        $application = Application::where('id', $request->application_id)->first();
+        if ($application->student_id == $student->id) {
+            $feedbacks = Feedback::join('feedback_application', 'feedback_application.feedback_id', '=', 'feedbacks.id')
+                ->where('feedback_application.application_id', $application->id)
+                ->orderBy('feedbacks.created_at', 'asc')
+                ->select('feedbacks.message', 'feedbacks.feedback_type')
+                ->get();
+            return response()->json($feedbacks);
+        }else {
+            return response()->json(['error' => 'You are not authorized to view this feedback'], 400);
+        }
+    }
 
 }

@@ -80,6 +80,8 @@ Route::middleware('auth:sanctum','student')->group(function () {
     Route::post('/apply', [StudentController::class, 'applyForInternship']);
     // get all applications for the logged in student
     Route::get('/applications', [StudentController::class, 'getStudentApplications']);
+    // get all feedbacks for the given application
+    Route::get('/applicationFeedbacks', [StudentController::class, 'getApplicationFeedbacks']);
 });
 
 // ============================================================
