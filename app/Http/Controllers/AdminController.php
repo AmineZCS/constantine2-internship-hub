@@ -135,14 +135,4 @@ class AdminController extends Controller
             return response()->json(['error' => 'Application is not for an internship in your department'], 400);
         }
     }
-
-
-
-
-
-
-
-
-
-
 }
