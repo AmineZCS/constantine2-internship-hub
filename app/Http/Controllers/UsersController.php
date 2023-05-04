@@ -22,21 +22,21 @@ class UsersController extends Controller
            case 'admin':
                $admin = Admin::join('users', 'users.id', '=', 'admins.id')
                    ->where('admins.id', $request->user()->id)
-                   ->select('admins.*', 'users.email')
+                   ->select('admins.*', 'users.email','users.role')
                    ->first();
                return response()->json($admin);
                break;
            case 'supervisor':
                $supervisor = Supervisor::join('users', 'users.id', '=', 'supervisors.id')
                    ->where('supervisors.id', $request->user()->id)
-                   ->select('supervisors.*', 'users.email')
+                   ->select('supervisors.*', 'users.email','users.role')
                    ->first();
                return response()->json($supervisor);
                break;
            case 'student':
                $student = Student::join('users', 'users.id', '=', 'students.id')
                    ->where('students.id', $request->user()->id)
-                   ->select('students.*', 'users.email')
+                   ->select('students.*', 'users.email','users.role')
                    ->first();
                return response()->json($student);
                break;
