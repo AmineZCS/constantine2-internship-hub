@@ -93,7 +93,31 @@ class SupervisorController extends Controller
         $feedbacks = Feedback::where('feedback_type', 'supervisor')->where('sender_id', $supervisor->id)->orWhere('is_default', true)->get();
         return response()->json($feedbacks);
     }
-
+    // attendance management
+    // mark students attendance for a specific date (accept an array of objects (student_id + is_present))
+    public function markAttendance (Request $request)
+    {
+        $user = $request->user();
+        $supervisor = Supervisor::where('id', $user->id)->first();
+        $date = $request->date;
+        $arrayOfAttendance = $request->attendance;
+        foreach ($arrayOfAttendance as $student) {
+            $student_id = $student['student_id'];
+            $is_present = $student['is_present'];
+            $attendance = Attendance::where('student_id', $student_id)->where('date', $date)->first();
+            if ($attendance) {
+                $attendance->is_present = $is_present;
+                $attendance->save();
+            } else {
+                $attendance = new Attendance();
+                $attendance->student_id = $student_id;
+                $attendance->date = $date;
+                $attendance->is_present = $is_present;
+                $attendance->save();
+            }
+        }
+        return response()->json(['message' => 'success']);
+    }
 
 
 }
