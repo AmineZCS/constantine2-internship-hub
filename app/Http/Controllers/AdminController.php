@@ -19,6 +19,28 @@ use App\Models\FeedbackApplication;
 
 class AdminController extends Controller
 {
+    // sign up a new admin (validate the request and create a new user record and a new admin record) and return the token
+    public function signUp(Request $request){
+        $request->validate([
+            'name' => 'required',
+            'email' => 'required|email|unique:users,email',
+            'password'=> 'required|min:6',
+            'department_id' => 'required|exists:departments,id'
+        ]);
+        $user = User::create([
+            'email'=> $request->email,
+            'password'=> Hash::make($request->password),
+            'role' => 'admin'
+        ]);
+        $admin = Admin::create([
+            'id' => $user->id,
+            'department_id' => $request->department_id
+        ]);
+        return response()->json([
+            'token' => $user->createToken($request->email)->plainTextToken,
+            'role' => $user->role
+        ]);
+    }
     // get all students in the same department as the logged in admin and join user's email
     public function getStudents (Request $request)
     {

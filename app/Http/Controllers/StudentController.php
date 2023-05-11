@@ -14,9 +14,36 @@ use App\Models\Company;
 use App\Models\Internship;
 use App\Models\Application;
 use App\Models\Feedback;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class StudentController extends Controller
 {
+    // sign up a new student (validate the request and create a new user record and a new student record) and return the token
+    public function signUp(Request $request){
+        $request->validate([
+            'name' => 'required',
+            'email' => 'required|email|unique:users,email',
+            'password'=> 'required|min:6',
+            'department_id' => 'required|exists:departments,id'
+        ]);
+        $user = User::create([
+            'email'=> $request->email,
+            'password'=> Hash::make($request->password),
+            'role' => 'student'
+        ]);
+        $student = Student::create([
+            'id' => $user->id,
+            'department_id' => $request->department_id
+        ]);
+        return response()->json([
+            'token' => $user->createToken($request->email)->plainTextToken,
+            'role' => $user->role
+        ]);
+    }
+
+   
 
 
     // get all internships in the same department as the logged in student

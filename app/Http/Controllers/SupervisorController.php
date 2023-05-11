@@ -15,6 +15,30 @@ use App\Models\Internship;
 
 class SupervisorController extends Controller
 {
+
+    // sign up a new supervisor (validate the request and create a new user record and a new supervisor record) and return the token
+    public function signUp(Request $request){
+        $request->validate([
+            'name' => 'required',
+            'email' => 'required|email|unique:users,email',
+            'password'=> 'required|min:6',
+            'company_id' => 'required|exists:companies,id'
+        ]);
+        $user = User::create([
+            'email'=> $request->email,
+            'password'=> Hash::make($request->password),
+            'role' => 'supervisor'
+        ]);
+        $supervisor = Supervisor::create([
+            'id' => $user->id,
+            'company_id' => $request->company_id
+        ]);
+        return response()->json([
+            'token' => $user->createToken($request->email)->plainTextToken,
+            'role' => $user->role
+        ]);
+    }
+    
     // create a new internship and assign it to the logged in supervisor and create a new internship_department record based on the array of departments_ids
     public function createInternship (Request $request)
     {

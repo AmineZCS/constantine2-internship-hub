@@ -45,6 +45,23 @@ Route::middleware('auth:sanctum')->post('/notifications/markAllAsRead', [Notific
 // get all departments in an array of objects
 Route::get('/departments', [UsersController::class, 'getDepartments']);
 
+// SignUp
+
+    // supervisor signup
+    Route::post('/supervisorSignup', [SupervisorController::class, 'signUp']);
+
+    // student signup
+    Route::post('/studentSignup', [StudentController::class, 'signUp']);
+
+    // admin signup
+    Route::post('/adminSignup', [AdminController::class, 'signUp']);
+
+
+
+
+// ============================================================
+
+
 
 //admin routes only
 Route::middleware('auth:sanctum','admin')->group(function () {
@@ -62,10 +79,6 @@ Route::middleware('auth:sanctum','admin')->group(function () {
     Route::post('/adminApprove', [AdminController::class, 'approveApplication']);
     // reject an application
     Route::post('/adminReject', [AdminController::class, 'rejectApplication']);
-
-
-
-
 });
 
 
