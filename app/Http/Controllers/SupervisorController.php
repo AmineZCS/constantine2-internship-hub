@@ -11,7 +11,9 @@ use App\Models\Admin;
 use App\Models\Department;
 use App\Models\Company;
 use App\Models\Internship;
-
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class SupervisorController extends Controller
 {

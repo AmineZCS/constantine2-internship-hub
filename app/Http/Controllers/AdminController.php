@@ -16,6 +16,9 @@ use App\Models\Application;
 use App\Models\Feedback;
 use App\Models\InternshipDepartment;
 use App\Models\FeedbackApplication;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class AdminController extends Controller
 {
