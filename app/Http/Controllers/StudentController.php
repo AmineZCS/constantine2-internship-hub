@@ -23,7 +23,8 @@ class StudentController extends Controller
     // sign up a new student (validate the request and create a new user record and a new student record) and return the token
     public function signUp(Request $request){
         $request->validate([
-            'name' => 'required',
+            'fname' => 'required',
+            'lname' => 'required',
             'email' => 'required|email|unique:users,email',
             'password'=> 'required|min:6',
             'department_id' => 'required|exists:departments,id'
@@ -34,6 +35,8 @@ class StudentController extends Controller
             'role' => 'student'
         ]);
         $student = Student::create([
+            'fname' => $request->fname,
+            'lname' => $request->lname,
             'id' => $user->id,
             'department_id' => $request->department_id
         ]);

@@ -19,7 +19,8 @@ class SupervisorController extends Controller
     // sign up a new supervisor (validate the request and create a new user record and a new supervisor record) and return the token
     public function signUp(Request $request){
         $request->validate([
-            'name' => 'required',
+            'fname' => 'required',
+            'lname' => 'required',
             'email' => 'required|email|unique:users,email',
             'password'=> 'required|min:6',
             'company_id' => 'required|exists:companies,id'
@@ -30,6 +31,8 @@ class SupervisorController extends Controller
             'role' => 'supervisor'
         ]);
         $supervisor = Supervisor::create([
+            'fname' => $request->fname,
+            'lname' => $request->lname,
             'id' => $user->id,
             'company_id' => $request->company_id
         ]);
