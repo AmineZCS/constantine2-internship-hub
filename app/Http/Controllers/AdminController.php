@@ -31,10 +31,17 @@ class AdminController extends Controller
             'password'=> 'required|min:6',
             'department_id' => 'required|exists:departments,id'
         ]);
+        // check if the department has an admin
+        $admin = Admin::where('department_id', $request->department_id)->first();
+        if ($admin) {
+            return response()->json([
+                'message' => 'This department already has an admin'
+            ], 400);
+        }
         $user = User::create([
+            'role' => 'admin',
             'email'=> $request->email,
-            'password'=> Hash::make($request->password),
-            'role' => 'admin'
+            'password'=> Hash::make($request->password)
         ]);
         $admin = Admin::create([
             'fname' => $request->fname,
@@ -42,6 +49,7 @@ class AdminController extends Controller
             'id' => $user->id,
             'department_id' => $request->department_id
         ]);
+        $user = User::where('id', $user->id)->first();
         return response()->json([
             'token' => $user->createToken($request->email)->plainTextToken,
             'role' => $user->role

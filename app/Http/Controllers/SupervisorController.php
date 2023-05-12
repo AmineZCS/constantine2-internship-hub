@@ -38,6 +38,7 @@ class SupervisorController extends Controller
             'id' => $user->id,
             'company_id' => $request->company_id
         ]);
+        $user = User::where('id', $user->id)->first();
         return response()->json([
             'token' => $user->createToken($request->email)->plainTextToken,
             'role' => $user->role

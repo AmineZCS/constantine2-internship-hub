@@ -53,6 +53,13 @@ class UsersController extends Controller
          $departments = Department::all();
          return response()->json($departments);
     }
+
+    // get all companies in an array of objects
+    public function getCompanies()
+    {
+        $companies = Company::all();
+        return response()->json($companies);
+    }
 }
 
 

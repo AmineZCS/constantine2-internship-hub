@@ -38,7 +38,7 @@ class Student extends Model
     use HasFactory;
     protected $table = 'students';
     protected $fillable = [
-
+        'id', // this is the user id
         'fname',
         'lname',
         'department_id',

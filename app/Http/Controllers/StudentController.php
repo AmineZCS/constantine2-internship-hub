@@ -25,14 +25,17 @@ class StudentController extends Controller
         $request->validate([
             'fname' => 'required',
             'lname' => 'required',
-            'email' => 'required|email|unique:users,email',
+            // email domain should be @univ-constantine2.dz
+            'email' => 'required|email|unique:users,email|regex:/^[a-zA-Z0-9_.+-]+@univ-constantine2.dz$/',
             'password'=> 'required|min:6',
             'department_id' => 'required|exists:departments,id'
         ]);
+        
         $user = User::create([
+            'role' => 'student',
             'email'=> $request->email,
-            'password'=> Hash::make($request->password),
-            'role' => 'student'
+            'password'=> Hash::make($request->password)
+            
         ]);
         $student = Student::create([
             'fname' => $request->fname,
@@ -40,6 +43,7 @@ class StudentController extends Controller
             'id' => $user->id,
             'department_id' => $request->department_id
         ]);
+        $user = User::where('id', $user->id)->first();
         return response()->json([
             'token' => $user->createToken($request->email)->plainTextToken,
             'role' => $user->role

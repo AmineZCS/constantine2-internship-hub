@@ -45,6 +45,10 @@ Route::middleware('auth:sanctum')->post('/notifications/markAllAsRead', [Notific
 // get all departments in an array of objects
 Route::get('/departments', [UsersController::class, 'getDepartments']);
 
+// get all companies in an array of objects
+Route::get('/companies', [UsersController::class, 'getCompanies']);
+
+
 // SignUp
 
     // supervisor signup
