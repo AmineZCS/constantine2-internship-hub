@@ -14,7 +14,8 @@ use App\Models\Internship;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-
+use App\Models\Attendance;
+// command to create attendance model: php artisan make:model Attendance -m
 class SupervisorController extends Controller
 {
 
@@ -33,6 +34,7 @@ class SupervisorController extends Controller
             'role' => 'supervisor'
         ]);
         $supervisor = Supervisor::create([
+            'id' => $user->id,
             'fname' => $request->fname,
             'lname' => $request->lname,
             'id' => $user->id,
@@ -101,6 +103,7 @@ class SupervisorController extends Controller
     public function markAttendance (Request $request)
     {
         $user = $request->user();
+        $internshipid = Internship::where('supervisor_id', $user->id)->first()->id;
         $supervisor = Supervisor::where('id', $user->id)->first();
         $date = $request->date;
         $arrayOfAttendance = $request->attendance;
@@ -114,6 +117,7 @@ class SupervisorController extends Controller
             } else {
                 $attendance = new Attendance();
                 $attendance->student_id = $student_id;
+                $attendance->internship_id = $internshipid;
                 $attendance->date = $date;
                 $attendance->is_present = $is_present;
                 $attendance->save();

@@ -38,6 +38,7 @@ class Supervisor extends Model
     use HasFactory;
     protected $table = 'supervisors';
     protected $fillable = [
+        'id',
         'fname',
         'lname',
         'company_id',
