@@ -56,5 +56,8 @@ class Student extends Model
     {
         return $this->hasManyThrough(Internship::class, Application::class, 'student_id', 'id', 'id', 'internship_id');
     }
-    
+    public function attendance()
+    {
+        return $this->hasMany(Attendance::class, 'student_id', 'id');
+    }
 }

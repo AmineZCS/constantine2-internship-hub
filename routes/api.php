@@ -117,4 +117,6 @@ Route::middleware('auth:sanctum','supervisor')->group(function () {
     Route::post('/supervisorFeedbacks', [SupervisorController::class, 'createSupervisorFeedback']);
     // mark attendance for the logged in supervisor
     Route::post('/markAttendance', [SupervisorController::class, 'markAttendance']);
+    // get all attendance for the logged in supervisor
+    Route::get('/attendance', [SupervisorController::class, 'getAttendance']);
 });

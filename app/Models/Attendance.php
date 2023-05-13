@@ -9,5 +9,10 @@ class Attendance extends Model
 {
     use HasFactory;
     protected $table = 'attendance';
-
+    // relationship between attendance and student
+    public function student()
+    {
+        return $this->belongsTo(Student::class, 'student_id', 'id');
+    }
+    
 }

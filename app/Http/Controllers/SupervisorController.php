@@ -104,7 +104,6 @@ class SupervisorController extends Controller
     {
         $user = $request->user();
         $internshipid = Internship::where('supervisor_id', $user->id)->first()->id;
-        $supervisor = Supervisor::where('id', $user->id)->first();
         $date = $request->date;
         $arrayOfAttendance = $request->attendance;
         foreach ($arrayOfAttendance as $student) {
@@ -125,7 +124,17 @@ class SupervisorController extends Controller
         }
         return response()->json(['message' => 'success']);
     }
-
-
+    // get all students attendance for a specific date
+    public function getAttendance (Request $request)
+    {
+        $user = $request->user();
+        $internshipid = Internship::where('supervisor_id', $user->id)->first()->id;
+        $date = $request->date;
+        $attendance = Attendance::where('internship_id', $internshipid)
+        ->where('date', $date)
+        ->with('student')
+        ->get();
+        return response()->json($attendance);
+    }
 }
 
