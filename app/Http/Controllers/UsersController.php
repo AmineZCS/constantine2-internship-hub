@@ -69,4 +69,70 @@ class UsersController extends Controller
         $pathToFile = storage_path('app/public/cvs/profile_cvs/' . $student->cv_path);
         return Response::download($pathToFile);
     }
-}
+
+    // update the logged in user's profile picture (save the image in the public folder(id.jpg) and update the image path in the database)
+    public function updateProfilePicture (Request $request)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg|max:2048'
+        ]);
+        $user = $request->user();
+        $imageName = $user->id.'.'.$request->image->extension();
+        $request->image->move(public_path('profile_images'), $imageName);
+        // get the user role
+        $role = $user->role;
+        // update the image path in the database based on the user role
+        switch ($role) {
+            case 'admin':
+                $admin = Admin::where('id', $user->id)->first();
+                $admin->image = $imageName;
+                $admin->save();
+                break;
+            case 'supervisor':
+                $supervisor = Supervisor::where('id', $user->id)->first();
+                $supervisor->image = $imageName;
+                $supervisor->save();
+                break;
+            case 'student':
+                $student = Student::where('id', $user->id)->first();
+                $student->photo_path = $imageName;
+                $student->save();
+                break;
+            default:
+                return response()->json(['message' => 'No role found']);
+                break;
+        }
+        return response()->json(['message' => 'Profile picture updated successfully']);
+    }
+    // get profile picture of the logged in user
+    public function getProfilePicture(Request $request){
+        $userid = $request->user()->id;
+        // get the user role
+        $role = $request->user()->role;
+        // get the image path from the database based on the user role
+        switch ($role) {
+            case 'admin':
+                $admin = Admin::where('id', $userid)->first();
+                $imageName = $admin->image;
+                break;
+            case 'supervisor':
+                $supervisor = Supervisor::where('id', $userid)->first();
+                $imageName = $supervisor->image;
+                break;
+            case 'student':
+                $student = Student::where('id', $userid)->first();
+                $imageName = $student->photo_path;
+                break;
+            default:
+                return response()->json(['message' => 'No role found']);
+                break;
+        }
+        $path = storage_path('app/public/pictures/profile_pics/' . $imageName);
+    
+        if (!file_exists($path)) {
+            abort(404);
+        }
+    
+        return response()->file($path);
+    }
+}      
