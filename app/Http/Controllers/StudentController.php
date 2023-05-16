@@ -65,6 +65,10 @@ class StudentController extends Controller
             ->get();
         return response()->json($internships);
     }
+
+
+
+    
     // apply for an internship only if it's in the same department as the logged in student
     public function applyForInternship (Request $request)
     {
@@ -92,6 +96,9 @@ class StudentController extends Controller
             return response()->json(['error' => 'Internship is not for your department'], 400);
         }
     }
+
+
+
     // get all applied internships
     public function getAppliedInternships (Request $request)
     {
@@ -100,6 +107,9 @@ class StudentController extends Controller
         $internships = $student->internships()->get();
         return response()->json($internships);
     }
+
+
+
     // get all applications with company and internship details for the logged in student
     public function getStudentApplications (Request $request)
     {
@@ -112,6 +122,8 @@ class StudentController extends Controller
             ->get();
         return response()->json($applications);
     }
+
+
     // get all feedbacks for the given application
     public function getApplicationFeedbacks (Request $request)
     {
@@ -129,6 +141,8 @@ class StudentController extends Controller
             return response()->json(['error' => 'You are not authorized to view this feedback'], 400);
         }
     }
+
+
     // update the logged in student's profile picture (save the image in the public folder(id.jpg) and update the image path in the database)
     public function updateProfilePicture (Request $request)
     {
