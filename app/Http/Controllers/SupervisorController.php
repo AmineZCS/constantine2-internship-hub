@@ -15,19 +15,38 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Attendance;
-// command to create attendance model: php artisan make:model Attendance -m
 class SupervisorController extends Controller
 {
 
-    // sign up a new supervisor (validate the request and create a new user record and a new supervisor record) and return the token
+    // sign up a new company and a new supervisor (validate the request and create a new user record and a new supervisor record) and return the token
     public function signUp(Request $request){
         $request->validate([
             'fname' => 'required',
             'lname' => 'required',
             'email' => 'required|email|unique:users,email',
             'password'=> 'required|min:6',
-            'company_id' => 'required|exists:companies,id'
+            // phone number , bio and image are optional
+            'user_phone_number' => 'nullable',
+            'user_bio' => 'nullable',
+            'user_image' => 'nullable',
+            // company details
+            'company_name' => 'required',
+            'company_email' => 'required|email|unique:companies,email',
+            'company_phone_number' => 'nullable',
+            'company_address' => 'nullable',
+            'company_bio' => 'nullable',
+            'company_image' => 'nullable',
         ]);
+        // create a company record with the company details from the request
+        $company = Company::create([
+            'name' => $request->company_name,
+            'email' => $request->company_email,
+            'phone_number' => $request->company_phone_number,
+            'address' => $request->company_address,
+            'bio' => $request->company_bio,
+            'image' => $request->company_image
+        ]);
+
         $user = User::create([
             'email'=> $request->email,
             'password'=> Hash::make($request->password),
@@ -38,14 +57,20 @@ class SupervisorController extends Controller
             'fname' => $request->fname,
             'lname' => $request->lname,
             'id' => $user->id,
-            'company_id' => $request->company_id
+            'company_id' => $company->id,
+            'phone_number' => $request->user_phone_number,
+            'bio' => $request->user_bio,
+
         ]);
         $user = User::where('id', $user->id)->first();
         return response()->json([
             'token' => $user->createToken($request->email)->plainTextToken,
             'role' => $user->role
         ]);
+        
     }
+    
+
     
     // create a new internship and assign it to the logged in supervisor and create a new internship_department record based on the array of departments_ids
     public function createInternship (Request $request)
