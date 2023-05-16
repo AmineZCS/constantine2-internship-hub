@@ -42,6 +42,15 @@ Route::middleware('auth:sanctum')->get('/notifications', [NotificationController
 // make all notifications as read for the logged in user
 Route::middleware('auth:sanctum')->post('/notifications/markAllAsRead', [NotificationController::class, 'markAllAsRead']);
 
+// accept student id and download the student's cv from the storage/app/public/cvs/profile_cvs/user_id
+Route::middleware('auth:sanctum')->get('/downloadCV', [UsersController::class, 'downloadCV']);
+
+
+
+
+
+
+
 // get all departments in an array of objects
 Route::get('/departments', [UsersController::class, 'getDepartments']);
 
@@ -99,6 +108,8 @@ Route::middleware('auth:sanctum','student')->group(function () {
     Route::get('/applications', [StudentController::class, 'getStudentApplications']);
     // get all feedbacks for the given application
     Route::get('/applicationFeedbacks', [StudentController::class, 'getApplicationFeedbacks']);
+    // update the logged in student's profile picture
+    Route::post('/updateProfilePicture', [StudentController::class, 'updateProfilePicture']);
 });
 
 // ============================================================

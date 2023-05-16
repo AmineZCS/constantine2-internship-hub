@@ -11,6 +11,7 @@ use App\Models\Admin;
 use App\Models\Department;
 use App\Models\Company;
 use App\Models\Internship;
+use Illuminate\Support\Facades\Response;
 
 class UsersController extends Controller
 {
@@ -60,7 +61,12 @@ class UsersController extends Controller
         $companies = Company::all();
         return response()->json($companies);
     }
+
+    // download the student's CV to the front end
+    public function downloadCV(Request $request)
+    {
+        $student = Student::where('id', $request->id)->first();
+        $pathToFile = storage_path('app/public/cvs/profile_cvs/' . $student->cv_path);
+        return Response::download($pathToFile);
+    }
 }
-
-
-
