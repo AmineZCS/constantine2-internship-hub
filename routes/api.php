@@ -45,6 +45,9 @@ Route::middleware('auth:sanctum')->post('/notifications/markAllAsRead', [Notific
 // accept student id and download the student's cv from the storage/app/public/cvs/profile_cvs/user_id
 Route::middleware('auth:sanctum')->get('/downloadCV', [UsersController::class, 'downloadCV']);
 
+// update the logged in users's profile picture
+Route::middleware('auth:sanctum')->post('/updateProfilePicture', [UsersController::class, 'updateProfilePicture']);
+
 
 
 
@@ -57,6 +60,8 @@ Route::get('/departments', [UsersController::class, 'getDepartments']);
 // get all companies in an array of objects
 Route::get('/companies', [UsersController::class, 'getCompanies']);
 
+// get the profile picture of the logged in user
+Route::middleware('auth:sanctum')->get('/profilePicture', [UsersController::class, 'getProfilePicture']);
 
 // SignUp
 
@@ -68,8 +73,6 @@ Route::get('/companies', [UsersController::class, 'getCompanies']);
 
     // admin signup
     Route::post('/adminSignup', [AdminController::class, 'signUp']);
-
-
 
 
 // ============================================================
@@ -108,9 +111,7 @@ Route::middleware('auth:sanctum','student')->group(function () {
     Route::get('/applications', [StudentController::class, 'getStudentApplications']);
     // get all feedbacks for the given application
     Route::get('/applicationFeedbacks', [StudentController::class, 'getApplicationFeedbacks']);
-    // update the logged in student's profile picture
-    Route::post('/updateProfilePicture', [StudentController::class, 'updateProfilePicture']);
-});
+    });
 
 // ============================================================
 
