@@ -45,6 +45,22 @@ class AuthController extends Controller
             'message' => 'Wrong password'
         ], 404);
     }
+    // check if the logged in user is a supervisor , if yes for the account status (accepted or pending)
+    if($user->role == 'supervisor'){
+        $supervisor = Supervisor::where('id', $user->id)->first();
+        if($supervisor->status == 'pending'){
+            return response()->json([
+                'message' => 'Your account is waiting for approval'
+            ], 404);
+        }
+        else if($supervisor->status == 'rejected'){
+            return response()->json([
+                'message' => 'Your account was rejected'
+            ], 404);
+        }
+    }
+
+    // return token and role
     return response()->json([
         'token' => $user->createToken($request->email)->plainTextToken,
         'role' => $user->role
