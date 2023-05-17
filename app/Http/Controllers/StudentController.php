@@ -68,7 +68,7 @@ class StudentController extends Controller
 
 
 
-    
+
     // apply for an internship only if it's in the same department as the logged in student
     public function applyForInternship (Request $request)
     {
@@ -143,20 +143,7 @@ class StudentController extends Controller
     }
 
 
-    // update the logged in student's profile picture (save the image in the public folder(id.jpg) and update the image path in the database)
-    public function updateProfilePicture (Request $request)
-    {
-        $request->validate([
-            'image' => 'required|image|mimes:jpeg,png,jpg|max:2048'
-        ]);
-        $user = $request->user();
-        $student = Student::where('id', $user->id)->first();
-        $imageName = $student->id.'.'.$request->image->extension();
-        $request->image->move(public_path('profile_images'), $imageName);
-        $student->photo_path = $imageName;
-        $student->save();
-        return response()->json(['message' => 'Profile picture updated successfully']);
-    }
+    
 
 
 

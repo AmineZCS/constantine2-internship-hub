@@ -106,9 +106,9 @@ class UsersController extends Controller
     }
     // get profile picture of the logged in user
     public function getProfilePicture(Request $request){
-        $userid = $request->user()->id;
+        $userid = $request->id;
         // get the user role
-        $role = $request->user()->role;
+        $role = User::where('id', $userid)->first()->role;
         // get the image path from the database based on the user role
         switch ($role) {
             case 'admin':

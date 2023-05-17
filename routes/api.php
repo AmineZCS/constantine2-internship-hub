@@ -60,9 +60,6 @@ Route::get('/departments', [UsersController::class, 'getDepartments']);
 // get all companies in an array of objects
 Route::get('/companies', [UsersController::class, 'getCompanies']);
 
-// get the profile picture of the logged in user
-Route::middleware('auth:sanctum')->get('/profilePicture', [UsersController::class, 'getProfilePicture']);
-
 // SignUp
 
     // supervisor signup
