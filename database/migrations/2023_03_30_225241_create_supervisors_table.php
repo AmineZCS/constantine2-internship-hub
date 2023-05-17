@@ -19,6 +19,7 @@ return new class extends Migration
             $table->rememberToken();
             $table->string('phone_number')->nullable();
             $table->text('bio')->nullable();
+            $table->enum('status', ['accepted', 'pending','rejected'])->default('pending');
             $table->string('image')->nullable();
             $table->unsignedBigInteger('company_id');
             $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade')->onUpdate('cascade');
