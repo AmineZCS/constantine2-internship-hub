@@ -171,4 +171,31 @@ class AdminController extends Controller
             return response()->json(['error' => 'Application is not for an internship in your department'], 400);
         }
     }
+    // accept a supervisor account
+    public function acceptSupervisor (Request $request)
+    {
+        // validate inputs
+        $this->validate($request, [
+            'supervisor_id' => 'required|integer',
+        ]);
+        $supervisor = Supervisor::where('id', $request->supervisor_id)->first();
+        $supervisor->status = 'accepted';
+        $supervisor->save();
+        return response()->json([
+            'message' => 'Supervisor account accepted',
+        ], 200);
+    }
+    // reject a supervisor account
+    public function rejectSupervisor (Request $request)
+    {   
+        $this->validate($request, [
+            'supervisor_id' => 'required|integer',
+        ]);
+        $supervisor = Supervisor::where('id', $request->supervisor_id)->first();
+        $supervisor->status = 'rejected';
+        $supervisor->save();
+        return response()->json([
+            'message' => 'Supervisor account rejected',
+        ], 200);
+    }
 }

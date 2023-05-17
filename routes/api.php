@@ -92,6 +92,10 @@ Route::middleware('auth:sanctum','admin')->group(function () {
     Route::post('/adminApprove', [AdminController::class, 'approveApplication']);
     // reject an application
     Route::post('/adminReject', [AdminController::class, 'rejectApplication']);
+    // accept supervisor account
+    Route::post('/adminAcceptSupervisor', [AdminController::class, 'acceptSupervisor']);
+    // reject supervisor account
+    Route::post('/adminRejectSupervisor', [AdminController::class, 'rejectSupervisor']);
 });
 
 
