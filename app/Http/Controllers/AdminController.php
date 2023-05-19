@@ -68,18 +68,22 @@ class AdminController extends Controller
         return response()->json($students);
     }
 
-    // get all internships in the same department as the logged in admin
+    // get all internships in the same department as the logged in admin (where supervisor status is accepted) (join company name)
     public function getDepartmentInterns (Request $request)
     {
         $user = $request->user();
         $admin = Admin::where('id', $user->id)->first();
         $department = Department::where('id', $admin->department_id)->first();
         $internships = Internship::join('internship_department', 'internship_department.internship_id', '=', 'internships.id')
+            ->join('companies', 'companies.id', '=', 'internships.company_id')
+            ->join('supervisors', 'supervisors.id', '=', 'internships.supervisor_id')
             ->where('internship_department.department_id', $department->id)
-            ->select('internships.*')
+            ->where('supervisors.status', 'accepted')
+            ->select('internships.*', 'companies.name as company_name', 'supervisors.fname as supervisor_fname', 'supervisors.lname as supervisor_lname')
             ->get();
         return response()->json($internships);
     }
+        
     // create a new feedback
     public function createAdminFeedback (Request $request)
     {

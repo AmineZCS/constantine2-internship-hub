@@ -59,11 +59,23 @@ class AuthController extends Controller
             ], 404);
         }
     }
+    // store  user info in a variable depending on the role
 
-    // return token and role
+    if($user->role == 'student'){
+        $user_info = Student::where('id', $user->id)->first();
+    }
+    else if($user->role == 'supervisor'){
+        $user_info = Supervisor::where('id', $user->id)->first();
+    }
+    else if($user->role == 'admin'){
+        $user_info = Admin::where('id', $user->id)->first();
+    }
+
+    // return token and role and user info depending on the role    
     return response()->json([
         'token' => $user->createToken($request->email)->plainTextToken,
-        'role' => $user->role
+        'role' => $user->role,
+        'user_info' => $user_info
     ]);
     }
 
