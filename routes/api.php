@@ -96,6 +96,8 @@ Route::middleware('auth:sanctum','admin')->group(function () {
     Route::post('/adminAcceptSupervisor', [AdminController::class, 'acceptSupervisor']);
     // reject supervisor account
     Route::post('/adminRejectSupervisor', [AdminController::class, 'rejectSupervisor']);
+    // get a list of all supervisors
+    Route::get('/supervisors', [AdminController::class, 'getSupervisors']);
 });
 
 

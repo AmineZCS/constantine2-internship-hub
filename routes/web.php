@@ -45,11 +45,13 @@ Route::get('profilePic/{userId}', function ($userid) {
                 return response()->json(['message' => 'No role found']);
                 break;
         }
-        $path = storage_path('app/public/pictures/profile_pics/' . $imageName);
-    
-        if (!file_exists($path)) {
-            abort(404);
+        if ($imageName == null) {
+            $path = storage_path('app/public/pictures/profile_pics/default.png');
+            return response()->file($path);
         }
-    
+        $path = storage_path('app/public/pictures/profile_pics/' . $imageName);
+        if (!file_exists($path)) {
+            $path = storage_path('app/public/pictures/profile_pics/default.png');
+        }
         return response()->file($path);
 });
