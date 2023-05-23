@@ -62,20 +62,30 @@ class AuthController extends Controller
     // store  user info in a variable depending on the role
 
     if($user->role == 'student'){
-        $user_info = Student::where('id', $user->id)->first();
+        $user_info = Student::where('students.id', $user->id)
+        // join users table
+        ->join('users', 'users.id', '=', 'students.id')
+        ->select('students.*', 'users.email', 'users.role')
+        ->first();
     }
     else if($user->role == 'supervisor'){
-        $user_info = Supervisor::where('id', $user->id)->first();
+        $user_info = Supervisor::where('supervisors.id', $user->id)
+        // join users table
+        ->join('users', 'users.id', '=', 'supervisors.id')
+        ->select('supervisors.*', 'users.email', 'users.role')
+        ->first();
     }
     else if($user->role == 'admin'){
-        $user_info = Admin::where('id', $user->id)->first();
+        $user_info = Admin::where('admins.id', $user->id)
+        // join users table
+        ->join('users', 'users.id', '=', 'admins.id')
+        ->select('admins.*', 'users.email', 'users.role')
+        ->first();
     }
 
     // return token and role and user info depending on the role    
     return response()->json([
         'token' => $user->createToken($request->email)->plainTextToken,
-        'role' => $user->role,
-        'email' => $user->email,
         'user_info' => $user_info
     ]);
     }
