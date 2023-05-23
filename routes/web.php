@@ -7,7 +7,7 @@ use App\Models\User;
 use App\Models\Student;
 use App\Models\Supervisor;
 use App\Models\Admin;
-
+use App\Models\Company;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -22,7 +22,7 @@ use App\Models\Admin;
 Route::get('/', function () {
     return view('welcome');
 });
-
+//  a route to get the profile picture of a user
 Route::get('profilePic/{userId}', function ($userid) {
     
         // get the user role
@@ -54,4 +54,20 @@ Route::get('profilePic/{userId}', function ($userid) {
             $path = storage_path('app/public/pictures/profile_pics/default.png');
         }
         return response()->file($path);
+});
+
+// a route to get the company picture
+Route::get('companyPic/{companyId}', function ($companyId) {
+    // get the company image path from the database
+    $company = Company::where('id', $companyId)->first();
+    $imageName = $company->image;
+    if ($imageName == null) {
+        $path = storage_path('app/public/pictures/company_pics/default.png');
+        return response()->file($path);
+    }
+    $path = storage_path('app/public/pictures/company_pics/' . $imageName);
+    if (!file_exists($path)) {
+        $path = storage_path('app/public/pictures/company_pics/default.png');
+    }
+    return response()->file($path);
 });

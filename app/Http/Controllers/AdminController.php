@@ -175,12 +175,12 @@ class AdminController extends Controller
             return response()->json(['error' => 'Application is not for an internship in your department'], 400);
         }
     }
-    // get all supervisors (id, fname, lname, email,company_name)
+    // get all supervisors (id, fname, lname, email,+ join company)
     public function getSupervisors (Request $request)
     {
         $supervisors = Supervisor::join('companies', 'companies.id', '=', 'supervisors.company_id')
             ->join('users', 'users.id', '=', 'supervisors.id')
-            ->select('supervisors.*','users.email as supervisor_email' , 'companies.name as company_name' )
+            ->select('supervisors.*','users.email as supervisor_email' , 'companies.name as company_name', 'companies.email as company_email','companies.phone_number as company_phone_number','companies.bio as company_bio','companies.address as address')
             ->get();
         return response()->json($supervisors);
     }
