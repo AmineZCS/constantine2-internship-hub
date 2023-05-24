@@ -78,7 +78,7 @@ class UsersController extends Controller
         ]);
         $user = $request->user();
         $imageName = $user->id.'.'.$request->image->extension();
-        $request->image->move(public_path('profile_images'), $imageName);
+        $request->image->move(storage_path('app/public/pictures/profile_pics/'), $imageName);
         // get the user role
         $role = $user->role;
         // update the image path in the database based on the user role
