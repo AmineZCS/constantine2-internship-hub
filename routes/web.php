@@ -8,6 +8,7 @@ use App\Models\Student;
 use App\Models\Supervisor;
 use App\Models\Admin;
 use App\Models\Company;
+use App\Models\Internship;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -68,6 +69,21 @@ Route::get('companyPic/{companyId}', function ($companyId) {
     $path = storage_path('app/public/pictures/company_pics/' . $imageName);
     if (!file_exists($path)) {
         $path = storage_path('app/public/pictures/company_pics/default.png');
+    }
+    return response()->file($path);
+});
+// a route to get internship picture
+Route::get('internshipPic/{internshipId}', function ($internshipId) {
+    // get the internship image path from the database
+    $internship = Internship::where('id', $internshipId)->first();
+    $imageName = $internship->photo;
+    if ($imageName == null) {
+        $path = storage_path('app/public/pictures/internship_pics/default.png');
+        return response()->file($path);
+    }
+    $path = storage_path('app/public/pictures/internship_pics/' . $imageName);
+    if (!file_exists($path)) {
+        $path = storage_path('app/public/pictures/internship_pics/default.png');
     }
     return response()->file($path);
 });
