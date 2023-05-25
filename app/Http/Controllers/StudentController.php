@@ -60,8 +60,11 @@ class StudentController extends Controller
         $student = Student::where('id', $user->id)->first();
         $department = Department::where('id', $student->department_id)->first();
         $internships = Internship::join('internship_department', 'internship_department.internship_id', '=', 'internships.id')
+            ->join('supervisors','supervisors.id','=','internships.supervisor_id')
+            ->join('companies','companies.id','=','internships.company_id')
+            ->join('users','users.id','=','supervisors.id')
             ->where('internship_department.department_id', $department->id)
-            ->select('internships.*')
+            ->select('internships.*','companies.name as company_name', 'companies.email as company_email','companies.phone_number as company_phone_number','companies.bio as company_bio','companies.address as address', 'supervisors.fname as supervisor_fname','supervisors.lname as supervisor_lname', 'users.email as supervisor_email','supervisors.phone_number as supervisor_phone_number','supervisors.bio as supervisor_bio','supervisors.location as supervisor.location')
             ->get();
         return response()->json($internships);
     }
