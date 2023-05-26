@@ -144,6 +144,7 @@ class AdminController extends Controller
     supervisors.location as supervisor_location,
     supervisors.phone_number as supervisor_phone_number,
     students.*,
+    students.id as student_id,
     student_users.email as student_email,
     supervisor_users.email as supervisor_email
 ')
