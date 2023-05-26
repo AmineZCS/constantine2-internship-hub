@@ -104,22 +104,101 @@ class AdminController extends Controller
         return response()->json($feedbacks);
     }
     // get all applications in the same department as the logged in admin with company,student and internship details (company name and id, internship position and id, student name and id)
-    public function getDepartmentApplications (Request $request)
-    {
-        $user = $request->user();
-        $admin = Admin::where('id', $user->id)->first();
-        $department = Department::where('id', $admin->department_id)->first();
-        $applications = Application::join('internships', 'internships.id', '=', 'applications.internship_id')
+    public function getDepartmentApplications(Request $request)
+{
+    $user = $request->user();
+    $admin = Admin::where('id', $user->id)->first();
+    $department = Department::where('id', $admin->department_id)->first();
 
-            ->join('internship_department', 'internship_department.internship_id', '=', 'internships.id')
-            ->join('companies', 'companies.id', '=', 'internships.company_id')
-            ->join('students', 'students.id', '=', 'applications.student_id')
-            ->join('users', 'users.id', '=', 'students.id')
-            ->where('internship_department.department_id', $department->id)
-            ->select('applications.*', 'companies.name as company_name', 'companies.id as company_id', 'internships.position as internship_position', 'internships.id as internship_id', 'students.fname as student_fname','students.lname as student_lname','users.email as student_email')
-            ->get();
-        return response()->json($applications);
+    if (!$department) {
+        return response()->json(['message' => 'Department not found'], 404);
     }
+
+    $application = Application::with('student');
+    $applications = Application::join('internships', 'internships.id', '=', 'applications.internship_id')
+        ->join('internship_department', 'internship_department.internship_id', '=', 'internships.id')
+        ->join('companies', 'companies.id', '=', 'internships.company_id')
+        ->join('supervisors', 'supervisors.id', '=', 'internships.supervisor_id')
+        ->join('students', 'students.id', '=', 'applications.student_id')
+        ->join('users as student_users', 'student_users.id', '=', 'students.id')
+        ->join('users as supervisor_users', 'supervisor_users.id', '=', 'supervisors.id')
+        ->where('internship_department.department_id', $department->id)
+        ->selectRaw('
+    applications.id,
+    applications.supervisor_status,
+    applications.admin_status,
+    applications.created_at,
+    applications.updated_at,
+    internships.*,
+    internships.status as internship_status,
+    internships.location as internship_location,
+    companies.*,
+    companies.name as company_name,
+    companies.address as company_address,
+    companies.phone_number as company_phone_number,
+    companies.email as company_email,
+    supervisors.*,
+    supervisors.fname as supervisor_fname,
+    supervisors.lname as supervisor_lname,
+    supervisors.bio as supervisor_bio,
+    supervisors.location as supervisor_location,
+    supervisors.phone_number as supervisor_phone_number,
+    students.*,
+    student_users.email as student_email,
+    supervisor_users.email as supervisor_email
+')
+        ->get()
+        ->map(function ($application) {
+            return [
+                'application' => [
+                    'id' => $application->id,
+                    'supervisor_status' => $application->supervisor_status,
+                    'admin_status' => $application->admin_status,
+                    'created_at' => $application->created_at,
+                    'updated_at' => $application->updated_at,
+                ],
+                'internship' => [
+                    'id' => $application->internship_id,
+                    'position' => $application->position,
+                    'description' => $application->description,
+                    'start_date' => $application->start_date,
+                    'end_date' => $application->end_date,
+                    'company_id' => $application->company_id,
+                    'status' => $application->internship_status,
+                    'location' => $application->internship_location,
+                    'supervisor_id' => $application->supervisor_id,
+                ],
+                'student' => [
+                    'id' => $application->student_id,
+                    'fname' => $application->fname,
+                    'lname' => $application->lname,
+                    'email' => $application->student_email,
+                    'bio' => $application->bio,
+                    'location' => $application->location,
+                    'phone_number' => $application->phone_number,
+                    // Add other student fields as needed
+                ],
+                'supervisor' => [
+                    'id' => $application->supervisor_id,
+                    'fname' => $application->supervisor_fname,
+                    'lname' => $application->supervisor_lname,
+                    'email' => $application->supervisor_email,
+                    'bio' => $application->supervisor_bio,
+                    'location' => $application->supervisor_location,
+                    'phone_number' => $application->supervisor_phone_number,
+                ],
+                'company' => [
+                    'id' => $application->company_id,
+                    'name' => $application->company_name,
+                    'email' => $application->company_email,
+                    'location' => $application->company_address,
+                    'phone_number' => $application->company_phone_number,
+                    // Add other company fields as needed
+                ],
+            ];
+        });
+    return response()->json($applications);
+}
     // approve application
     // check if the application is for in internship in the same department as the logged in admin then check if the application is pending and update the admin_status to approved else return error message for every case
     public function approveApplication (Request $request)
