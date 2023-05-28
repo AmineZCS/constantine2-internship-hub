@@ -135,5 +135,10 @@ Route::middleware('auth:sanctum','supervisor')->group(function () {
     // get all attendance for the logged in supervisor
     Route::get('/attendance', [SupervisorController::class, 'getAttendance']);
     // get all internship applications for the logged in supervisor
-    Route::get('supervisorApplications',[SupervisorController::class, 'getApplications']);
+    Route::get('/supervisorApplications',[SupervisorController::class, 'getApplications']);
+    // accept an internship application
+    Route::post('/supervisorAcceptApplication', [SupervisorController::class, 'acceptApplication']);
+    // reject an internship application
+    Route::post('/supervisorRejectApplication', [SupervisorController::class, 'rejectApplication']);                                                                                                        
+
 });

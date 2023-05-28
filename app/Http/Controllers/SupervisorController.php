@@ -12,6 +12,9 @@ use App\Models\Department;
 use App\Models\Company;
 use App\Models\Internship;
 use App\Models\User;
+use App\Models\Application;
+use App\Models\FeedbackApplication;
+use App\Models\Feedback;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Attendance;
@@ -169,17 +172,58 @@ class SupervisorController extends Controller
         $internships = Internship::where('supervisor_id', $supervisor->id)->get();
         $applications = [];
         foreach ($internships as $internship) {
-            $internship_applications = $internship->applications()->with('student.user:id,email')->get();
+            $internship_applications = $internship->applications()->with('student.user:id,email', 'student.department:id,abbreviation')->get();
             foreach ($internship_applications as $application) {
                 $student_email = $application->student->user->email;
+                $department_abr = $application->student->department->abbreviation;
                 $application_data = $application->toArray();
                 $application_data['student']['email'] = $student_email;
+                $application_data['student']['department'] = $department_abr;
                 unset($application_data['student']['user']);
+                unset($application_data['student']['department_abr']);
                 $applications[] = $application_data;
             }
         }
         return response()->json($applications);
-    
     }
+    // accept internship application (change the supervisor status of the application)
+    public function acceptApplication (Request $request)
+    {
+        $application_id = $request->application_id;
+        $application = Application::where('id', $application_id)->first();
+        $application->supervisor_status = "approved";
+        $application->save();
+        return response()->json(['message' => 'success']);
     }
+    // reject internship application (change the supervisor status of the application)
+    public function rejectApplication(Request $request)
+{
+    // validate inputs
+    $this->validate($request, [
+        'feedback_id' => 'required|integer',
+        'application_id' => 'required|integer',
+    ]);
 
+    $user = $request->user();
+    $supervisor = Supervisor::where('id', $user->id)->first();
+    $application = Application::where('id', $request->application_id)->first();
+    $internship = Internship::where('id', $application->internship_id)->first();
+    $internship_supervisor = Internship::where('id', $internship->id)->where('supervisor_id', $supervisor->id)->first();
+
+    if ($internship_supervisor) {
+        if ($application->supervisor_status == 'pending') {
+            $application->supervisor_status = 'rejected';
+            $feedback_application = new FeedbackApplication();
+            $feedback_application->application_id = $application->id;
+            $feedback_application->feedback_id = $request->feedback_id;
+            $feedback_application->save();
+            $application->save();
+            return response()->json($application);
+        } else {
+            return response()->json(['error' => 'Application is not waiting for approval'], 400);
+        }
+    } else {
+        return response()->json(['error' => 'Application is not for an internship you supervise'], 400);
+    }
+}
+}
