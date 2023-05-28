@@ -130,6 +130,7 @@ class AdminController extends Controller
     applications.created_at,
     applications.updated_at,
     internships.*,
+    internships.id as internship_id,
     internships.status as internship_status,
     internships.location as internship_location,
     companies.*,

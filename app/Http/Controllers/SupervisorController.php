@@ -161,5 +161,25 @@ class SupervisorController extends Controller
         ->get();
         return response()->json($attendance);
     }
-}
+    // get all applications for the logged in supervisor (with the student details including his email)
+    public function getApplications (Request $request)
+    {
+        $user = $request->user();
+        $supervisor = Supervisor::where('id', $user->id)->first();
+        $internships = Internship::where('supervisor_id', $supervisor->id)->get();
+        $applications = [];
+        foreach ($internships as $internship) {
+            $internship_applications = $internship->applications()->with('student.user:id,email')->get();
+            foreach ($internship_applications as $application) {
+                $student_email = $application->student->user->email;
+                $application_data = $application->toArray();
+                $application_data['student']['email'] = $student_email;
+                unset($application_data['student']['user']);
+                $applications[] = $application_data;
+            }
+        }
+        return response()->json($applications);
+    
+    }
+    }
 

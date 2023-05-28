@@ -60,4 +60,8 @@ class Student extends Model
     {
         return $this->hasMany(Attendance::class, 'student_id', 'id');
     }
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'id', 'id');
+    }
 }
