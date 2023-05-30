@@ -66,6 +66,12 @@ class UsersController extends Controller
     public function downloadCV(Request $request)
     {
         $student = Student::where('id', $request->id)->first();
+        // check if the student has uploaded a cv if not return an error message with status code 404
+        if($student->cv_path == null)
+        {
+            return response()->json(['message' => 'No CV found'], 404);
+        }
+
         $pathToFile = storage_path('app/public/cvs/profile_cvs/' . $student->cv_path);
         return Response::download($pathToFile);
     }
