@@ -17,6 +17,8 @@ use App\Models\Feedback;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\WelcomeEmail;
 
 class StudentController extends Controller
 {
@@ -44,10 +46,13 @@ class StudentController extends Controller
             'department_id' => $request->department_id
         ]);
         $user = User::where('id', $user->id)->first();
+        $user_info = Student::where('id', $user->id)->first();
+        Mail::to($user->email)->send(new WelcomeEmail($user, $user_info));
         return response()->json([
             'token' => $user->createToken($request->email)->plainTextToken,
-            'role' => $user->role
-        ]);
+            'role' => $user->role,
+            'message' => 'Welcome Email sent successfully'
+        ],200);
     }
 
    

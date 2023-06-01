@@ -12,6 +12,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\UsersController;
 use App\Http\Middleware\CorsMiddleware;
+use App\Mail\WelcomeEmail;
 
 
 /*
@@ -26,6 +27,8 @@ use App\Http\Middleware\CorsMiddleware;
 */
 
 //all roles can access these routes
+// test the email sender by sending a welcome email to the logged in user
+
 
 // login and return token
 Route::post('/login', [AuthController::class, 'login']);
