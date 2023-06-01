@@ -214,7 +214,6 @@ class SupervisorController extends Controller
     $internship_supervisor = Internship::where('id', $internship->id)->where('supervisor_id', $supervisor->id)->first();
 
     if ($internship_supervisor) {
-        if ($application->supervisor_status == 'pending') {
             $application->supervisor_status = 'rejected';
             $feedback_application = new FeedbackApplication();
             $feedback_application->application_id = $application->id;
@@ -222,9 +221,6 @@ class SupervisorController extends Controller
             $feedback_application->save();
             $application->save();
             return response()->json($application);
-        } else {
-            return response()->json(['error' => 'Application is not waiting for approval'], 400);
-        }
     } else {
         return response()->json(['error' => 'Application is not for an internship you supervise'], 400);
     }
