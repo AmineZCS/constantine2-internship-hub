@@ -8,6 +8,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\Student;
 use App\Models\Supervisor;
+use App\Models\Notification;
 use App\Models\Admin;
 use App\Models\Department;
 use App\Models\Company;
@@ -19,6 +20,9 @@ use App\Models\FeedbackApplication;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\WelcomeEmail;
+use App\Mail\StudentApplicationDeclinedEmail;
 
 class AdminController extends Controller
 {
@@ -103,7 +107,7 @@ class AdminController extends Controller
     public function getAdminFeedbacks (Request $request)
     {
         $user = $request->user();
-        $feedbacks = Feedback::where('feedback_type', 'admin')->where('sender_id', $user->id)->orWhere('is_default', true)->get();
+        $feedbacks = Feedback::where('feedback_type', 'admin')->where('is_default', true)->orWhere('sender_id', $user->id)->get();
         return response()->json($feedbacks);
     }
     // get all applications in the same department as the logged in admin with company,student and internship details (company name and id, internship position and id, student name and id)
@@ -127,7 +131,7 @@ class AdminController extends Controller
         ->join('users as supervisor_users', 'supervisor_users.id', '=', 'supervisors.id')
         ->where('internship_department.department_id', $department->id)
         ->selectRaw('
-    applications.id,
+    applications.id as application_id,
     applications.supervisor_status,
     applications.admin_status,
     applications.created_at,
@@ -156,7 +160,7 @@ class AdminController extends Controller
         ->map(function ($application) {
             return [
                 'application' => [
-                    'id' => $application->id,
+                    'id' => $application->application_id,
                     'supervisor_status' => $application->supervisor_status,
                     'admin_status' => $application->admin_status,
                     'created_at' => $application->created_at,
@@ -215,14 +219,23 @@ class AdminController extends Controller
         $internship = Internship::where('id', $application->internship_id)->first();
         $internship_department = InternshipDepartment::where('internship_id', $internship->id)->where('department_id', $department->id)->first();
         if ($internship_department) {
-            if ($application->admin_status == 'pending') {
                 $application->admin_status = 'approved';
                 $application->save();
+                // create a new notification for  the student
+                $student = Student::where('id', $application->student_id)->first();
+                $notification = new Notification;
+                $notification->user_id = $student->id;
+                $notification->title = 'Application Approved';
+                $notification->message = 'Your application for the ' . $internship->position . ' internship has been approved by the administrator';
+                $notification->save();
+                // create a new notification for  the supervisor
+                $supervisor = Supervisor::where('id', $internship->supervisor_id)->first();
+                $notification = new Notification;
+                $notification->user_id = $supervisor->id;
+                $notification->title = 'New Application';
+                $notification->message = 'A student has applied for the ' . $internship->position . ' internship';
+                $notification->save();
                 return response()->json($application);
-            } else {
-                return response()->json(['error' => 'Application is not waiting for approval'], 400);
-            }
-
         } else {
             return response()->json(['error' => 'Application is not for an internship in your department'], 400);
         }
@@ -240,20 +253,35 @@ class AdminController extends Controller
         $department = Department::where('id', $admin->department_id)->first();
         $application = Application::where('id', $request->application_id)->first();
         $internship = Internship::where('id', $application->internship_id)->first();
+        $feedback_message = Feedback::where('id', $request->feedback_id)->select('message')->first();
         $internship_department = InternshipDepartment::where('internship_id', $internship->id)->where('department_id', $department->id)->first();
         if ($internship_department) {
-
-            if ($application->admin_status == 'pending') {
                 $application->admin_status = 'rejected';
                 $feedback_application = new FeedbackApplication();
                 $feedback_application->application_id = $application->id;
                 $feedback_application->feedback_id = $request->feedback_id;
                 $feedback_application->save();
                 $application->save();
-                return response()->json($application);
-            } else {
-                return response()->json(['error' => 'Application is not waiting for approval'], 400);
-            }
+                // create a new notification for  the student
+                $student = Student::where('id', $application->student_id)->first();
+                $notification = new Notification;
+                $notification->user_id = $student->id;
+                $notification->title = 'Application Rejected';
+                $notification->message = 'Your application for the ' . $internship->position . ' internship has been rejected by the administrator';
+                $notification->save();
+                // send email to student with the feedback (use )
+                // create a data array to pass to the email view (it has fname and lname of student , feedback message , internship position , admin name)
+                $data = [
+                    'fname' => $student->fname,
+                    'lname' => $student->lname,
+                    'feedback' => $feedback_message->message,
+                    'position' => $internship->position,
+                    'admin_name' => $admin->fname . ' ' . $admin->lname,
+                ];
+                $receiver = User::where('id', $student->id)->first();
+                Mail::to($receiver->email)->send(new StudentApplicationDeclinedEmail($data));
+                
+               return response()->json($application);
 
         } else {
             return response()->json(['error' => 'Application is not for an internship in your department'], 400);

@@ -12,18 +12,16 @@ use Illuminate\Mail\Mailables\Address;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Mail;
 
-class WelcomeEmail extends Mailable
+class StudentApplicationDeclinedEmail extends Mailable
 {
     use Queueable, SerializesModels;
-    public $user;
-    public $user_info;
+    public $data;
     /**
      * Create a new message instance.
      */
-    public function __construct($user, $user_info)
+    public function __construct($data)
     {
-        $this->user = $user;
-        $this->user_info = $user_info;
+        $this->data = $data;
     }
 
     /**
@@ -32,7 +30,7 @@ class WelcomeEmail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Welcome Email',
+            subject: 'Application Declined',
             from: new Address('noreply@internshipaxis.me', 'Internship Axis'),
             
         );
@@ -44,10 +42,9 @@ class WelcomeEmail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'WelcomeEmail',
+            view: 'StudentApplicationDeclinedEmail',
             with: [
-                'user' => $this->user,
-                'user_info' => $this->user_info,
+                'data' => $this->data,
             ],
         );
     }

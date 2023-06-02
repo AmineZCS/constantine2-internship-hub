@@ -18,6 +18,11 @@ use App\Models\Feedback;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Attendance;
+use App\Models\Notification;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\WelcomeEmail;
+use App\Mail\StudentApplicationDeclinedEmail;
+
 class SupervisorController extends Controller
 {
 
@@ -212,7 +217,8 @@ class SupervisorController extends Controller
     $application = Application::where('id', $request->application_id)->first();
     $internship = Internship::where('id', $application->internship_id)->first();
     $internship_supervisor = Internship::where('id', $internship->id)->where('supervisor_id', $supervisor->id)->first();
-
+    $feedback_message = Feedback::where('id', $request->feedback_id)->select('message')->first();
+       
     if ($internship_supervisor) {
             $application->supervisor_status = 'rejected';
             $feedback_application = new FeedbackApplication();
@@ -220,6 +226,26 @@ class SupervisorController extends Controller
             $feedback_application->feedback_id = $request->feedback_id;
             $feedback_application->save();
             $application->save();
+            // create a new notification for the student
+            $notification = new Notification();
+            $notification->user_id = $application->student_id;
+            $notification->title = 'Application Rejected';
+            $notification->message = 'Your application for ' . $internship->position . ' internship has been rejected by the supervisor';
+            $notification->save();
+            // send email to student with the feedback (use )
+                // create a data array to pass to the email view (it has fname and lname of student , feedback message , internship position , supervisor name)
+            $student = Student::where('id', $application->student_id)->first();
+            $data = [
+                    'fname' => $student->fname,
+                    'lname' => $student->lname,
+                    'feedback' => $feedback_message->message,
+                    'position' => $internship->position,
+                    'name' => $supervisor->fname . ' ' . $supervisor->lname,
+                ];
+            $receiver = User::where('id', $student->id)->first();
+            // send email to student
+            Mail::to($receiver->email)->send(new StudentApplicationDeclinedEmail($data));
+
             return response()->json($application);
     } else {
         return response()->json(['error' => 'Application is not for an internship you supervise'], 400);

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome Email</title>
+    <title>Application Declined</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -51,14 +51,28 @@
         .button:hover {
             background-color: #0069d9;
         }
+        blockquote {
+            margin: 0 0 20px;
+            padding: 20px;
+            border-left: 5px solid #eee;
+            background-color: #f5f5f5;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <img src="https://example.com/logo.png" alt="Logo" class="logo">
-        <h1>Welcome to our website!</h1>
-        <p>Dear {{ $user_info->fname }} {{ $user_info->lname }},</p>
-        <p>Thank you for signing up for our website. We're excited to have you as a member of our community!</p>
+        <img src="https://github.com/AmineZCS/internship-management-vue/blob/main/src/assets/IA.png?raw=true" alt="Logo" class="logo">
+        
+        <p>Dear <b>{{ $data['fname'] }} {{ $data['lname'] }}</b>,</p>
+        <p>We regret to inform you that your application for the <b>{{ $data['position'] }}</b> Internship has been declined.</p>
+        <!-- blockquoto the feedback   -->
+        <blockquote>
+            <p>{{ $data['feedback'] }}</p>
+            <!-- author -->
+            <cite>~{{$data['name']}}</cite>
+        </blockquote>
+        <p>Thank you for your interest in the company. We wish you the best of luck in your future endeavors.</p>
         <p>If you have any questions or concerns, please don't hesitate to contact us.</p>
         <p>Best regards,</p>
         <p>The Website Team</p>
