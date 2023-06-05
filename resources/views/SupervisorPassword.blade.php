@@ -55,9 +55,10 @@
 </head>
 <body>
     <div class="container">
-        <img src="https://github.com/AmineZCS/internship-management-vue/blob/main/src/assets/IA.png?raw=true" alt="Logo" class="logo">
+    <img src="https://github.com/AmineZCS/internship-management-vue/blob/main/src/assets/IA.png?raw=true" alt="Logo" class="logo">
        <h1>Welcome to our website!</h1>
-        <p>Dear {{ $user_info->fname }} {{ $user_info->lname }},</p>
+        <p>Dear {{ $user->fname }} {{ $user->lname }},</p>
+        <p>Your password is: {{ $password }}</p>
         <p>Thank you for signing up for our website. We're excited to have you as a member of our community!</p>
         <p>If you have any questions or concerns, please don't hesitate to contact us.</p>
         <p>Best regards,</p>

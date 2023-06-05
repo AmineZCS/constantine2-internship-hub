@@ -154,6 +154,7 @@ class AdminController extends Controller
     students.*,
     students.id as student_id,
     student_users.email as student_email,
+    students.cv_path,
     supervisor_users.email as supervisor_email
 ')
         ->get()
@@ -185,6 +186,7 @@ class AdminController extends Controller
                     'bio' => $application->bio,
                     'location' => $application->location,
                     'phone_number' => $application->phone_number,
+                    'cv_path' => $application->cv_path,
                     // Add other student fields as needed
                 ],
                 'supervisor' => [

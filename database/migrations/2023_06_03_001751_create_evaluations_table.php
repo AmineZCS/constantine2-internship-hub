@@ -11,15 +11,17 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('student_evaluations', function (Blueprint $table) {
+        Schema::create('evaluations', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('student_id');
             $table->foreign('student_id')->references('id')->on('students')->onDelete('cascade');
             $table->unsignedBigInteger('supervisor_id');
             $table->foreign('supervisor_id')->references('id')->on('supervisors')->onDelete('cascade');
-            $table->unsignedBigInteger('aptitude_id');
-            $table->foreign('aptitude_id')->references('id')->on('aptitudes')->onDelete('cascade');
-            $table->unsignedTinyInteger('evaluation')->nullable();
+            $table->unsignedBigInteger('general')->nullable();
+            $table->unsignedBigInteger('skills')->nullable();
+            $table->unsignedBigInteger('initiative')->nullable();
+            $table->unsignedBigInteger('imagination')->nullable();
+            $table->unsignedBigInteger('knowledge')->nullable();
             $table->unsignedTinyInteger('total_mark')->nullable();
             $table->string('global_appreciation')->nullable();
             $table->timestamps();
@@ -32,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('student_evaluations');
+        Schema::dropIfExists('evaluations');
     }
 };

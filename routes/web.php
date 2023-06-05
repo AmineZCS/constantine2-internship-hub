@@ -9,6 +9,8 @@ use App\Models\Supervisor;
 use App\Models\Admin;
 use App\Models\Company;
 use App\Models\Internship;
+use Barryvdh\DomPDF\Facade as PDF;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -86,4 +88,18 @@ Route::get('internshipPic/{internshipId}', function ($internshipId) {
         $path = storage_path('app/public/pictures/internship_pics/default.png');
     }
     return response()->file($path);
+});
+
+// Route::get('/generateQRCode/{token}', function ($token) {
+//     $url = env('FRONTEND_URL') . '/certificate/' . $token;
+//     $qrCode = QrCode::size(50)->generate($url);
+//     return view('certificate', ['qrCode' => $qrCode, 'token' => $token]);
+// });
+
+Route::get('/generateQRCode/{token}', function ($token) {
+    $url = env('FRONTEND_URL') . '/certificate/' . $token;
+    $qrCode = QrCode::size(50)->generate($url);
+    $html = view('certificate', ['qrCode' => $qrCode, 'token' => $token])->render();
+    $pdf = PDF::loadHTML($html);
+    return $pdf->stream('certificate.pdf');
 });

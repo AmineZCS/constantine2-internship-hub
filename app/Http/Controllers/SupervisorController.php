@@ -19,10 +19,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Attendance;
 use App\Models\Notification;
+use App\Models\Evaluation;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\WelcomeEmail;
 use App\Mail\StudentApplicationDeclinedEmail;
-
+// str
 class SupervisorController extends Controller
 {
 
@@ -36,14 +37,12 @@ class SupervisorController extends Controller
             // phone number , bio and image are optional
             'user_phone_number' => 'nullable',
             'user_bio' => 'nullable',
-            'user_image' => 'nullable',
             // company details
             'company_name' => 'required',
             'company_email' => 'required|email|unique:companies,email',
             'company_phone_number' => 'nullable',
             'company_address' => 'nullable',
             'company_bio' => 'nullable',
-            'company_image' => 'nullable',
         ]);
         // create a company record with the company details from the request
         $company = Company::create([
@@ -52,8 +51,11 @@ class SupervisorController extends Controller
             'phone_number' => $request->company_phone_number,
             'address' => $request->company_address,
             'bio' => $request->company_bio,
-            'image' => $request->company_image
         ]);
+        $imageName = $company->id.'.'.$request->file('company_image')->extension();
+        $request->file('company_image')->move(storage_path('app/public/pictures/company_pics/'), $imageName);
+        $company->image = $imageName;
+        $company->save();
 
         $user = User::create([
             'email'=> $request->email,
@@ -66,12 +68,17 @@ class SupervisorController extends Controller
             'lname' => $request->lname,
             'id' => $user->id,
             'company_id' => $company->id,
+            'location' => $request->location,
             'phone_number' => $request->user_phone_number,
             'bio' => $request->user_bio,
-
         ]);
+
         $user = User::where('id', $user->id)->first();
         $user_info = Supervisor::where('id', $user->id)->first();
+        $imageName = $user->id.'.'.$request->file('user_image')->extension();
+        $request->file('user_image')->move(storage_path('app/public/pictures/profile_pics/'), $imageName);
+        $user_info->image = $imageName;
+        $user_info->save();
         Mail::to($user->email)->send(new WelcomeEmail($user, $user_info));
         return response()->json([
             'token' => $user->createToken($request->email)->plainTextToken,
@@ -81,7 +88,28 @@ class SupervisorController extends Controller
         
     }
     
-
+    public function getAcceptedStudents(Request $request)
+    {
+        // Get the logged-in supervisor
+        $supervisor = $request->user();
+    
+        // Get the supervisor's internship
+        $internship = Internship::where('supervisor_id', $supervisor->id)->first();
+    
+        // Get the students who applied to the internship and don't have a record in the evaluations table
+        $students = $internship->applications()
+            ->where('admin_status', 'approved') // Filter by admin acceptance
+            ->where('supervisor_status', 'approved') // Filter by supervisor acceptance
+            ->whereNotIn('student_id', function($query) {
+                $query->select('student_id')
+                      ->from('evaluations');
+            }) // Filter by students without evaluations
+            ->with('student') // Eager load the student relationship
+            ->get()
+            ->pluck('student'); // Get only the students
+    
+        return $students;
+    }
     
     // create a new internship and assign it to the logged in supervisor and create a new internship_department record based on the array of departments_ids
     public function createInternship (Request $request)
@@ -103,7 +131,11 @@ class SupervisorController extends Controller
         foreach ($departments_ids as $department_id) {
             $internship->departments()->attach($department_id);
         }
-
+        $imageName = $internship->id.'.'.$request->file('image')->extension();
+        $request->file('image')->move(storage_path('app/public/pictures/internship_pics/'), $imageName);
+        $internship->photo = $imageName;
+        $internship->save();
+       
         return response()->json($internship);
     }
     // get all internships created by the logged in supervisor
@@ -136,28 +168,26 @@ class SupervisorController extends Controller
     }
     // attendance management
     // mark students attendance for a specific date (accept an array of objects (student_id + is_present))
-    public function markAttendance (Request $request)
+    public function markAttendance(Request $request)
     {
         $user = $request->user();
         $internshipid = Internship::where('supervisor_id', $user->id)->first()->id;
-        $date = $request->date;
-        $arrayOfAttendance = $request->attendance;
-        foreach ($arrayOfAttendance as $student) {
-            $student_id = $student['student_id'];
-            $is_present = $student['is_present'];
-            $attendance = Attendance::where('student_id', $student_id)->where('date', $date)->first();
+    
+        foreach ($request->student_ids as $student_id) {
+            $attendance = Attendance::where('student_id', $student_id)->where('date', $request->date)->first();
             if ($attendance) {
-                $attendance->is_present = $is_present;
+                $attendance->is_present = $request->is_present;
                 $attendance->save();
             } else {
                 $attendance = new Attendance();
                 $attendance->student_id = $student_id;
                 $attendance->internship_id = $internshipid;
-                $attendance->date = $date;
-                $attendance->is_present = $is_present;
+                $attendance->date = $request->date;
+                $attendance->is_present = $request->is_present;
                 $attendance->save();
             }
         }
+    
         return response()->json(['message' => 'success']);
     }
     // get all students attendance for a specific date
@@ -205,7 +235,7 @@ class SupervisorController extends Controller
     }
     // reject internship application (change the supervisor status of the application)
     public function rejectApplication(Request $request)
-{
+    {
     // validate inputs
     $this->validate($request, [
         'feedback_id' => 'required|integer',
@@ -250,5 +280,171 @@ class SupervisorController extends Controller
     } else {
         return response()->json(['error' => 'Application is not for an internship you supervise'], 400);
     }
+    }
+    // get all student evaluations for the logged in supervisor's internship (include student informations)
+    
+    public function getEvaluations(Request $request)
+    {
+    
+    $user = $request->user();
+    $supervisor = Supervisor::where('id', $user->id)->first();
+    $internship = Internship::where('supervisor_id', $supervisor->id)->first();
+    $evaluations = Evaluation::where('supervisor_id', $supervisor->id)
+        ->with(['student' => function ($query) {
+            $query->with(['user' => function ($query) {
+                $query->select('id', 'email');
+            }, 'department' => function ($query) {
+                $query->select('id', 'abbreviation');
+            }]);
+        }])
+        ->get();
+    return response()->json($evaluations);
+
+    }
+
+    // edit the evaluation of a student (change the evaluation's general skills initiative imagination knowledge global_appreciation)
+    public function editEvaluation(Request $request)
+    {
+        // validate inputs
+        $this->validate($request, [
+            'evaluation_id' => 'required|integer',
+            'general' => 'required|integer',
+            'initiative' => 'required|integer',
+            'imagination' => 'required|integer',
+            'skills' => 'required|integer',
+            'knowledge' => 'required|integer',
+            'global_appreciation' => 'required|string',
+        ]);
+        $evaluation = Evaluation::where('id', $request->evaluation_id)->first();
+        $evaluation->general = $request->general;
+        $evaluation->initiative = $request->initiative;
+        $evaluation->imagination = $request->imagination;
+        $evaluation->knowledge = $request->knowledge;
+        $evaluation->skills = $request->skills;
+        $evaluation->global_appreciation = $request->global_appreciation;
+        // caluclate the total mark
+        $total = $request->general + $request->initiative + $request->imagination  + $request->knowledge + $request->skills;
+        $evaluation->total_mark = $total;
+        $evaluation->save();
+        return response()->json(['message' => 'success']);
+
+    }
+    // create a new evaluation (pass student id and evaluation marks) and calculate the total_mark
+    public function createEvaluation(Request $request){
+         // validate inputs
+         $this->validate($request, [
+            'student_id' => 'required|integer',
+            'general' => 'required|integer',
+            'initiative' => 'required|integer',
+            'imagination' => 'required|integer',
+            'skills' => 'required|integer',
+            'knowledge' => 'required|integer',
+            'global_appreciation' => 'required|string',
+        ]);
+        $evaluation = new Evaluation();
+        $evaluation->student_id = $request->student_id;
+        $evaluation->supervisor_id = $request->user()->id;
+        $evaluation->general = $request->general;
+        $evaluation->initiative = $request->initiative;
+        $evaluation->imagination = $request->imagination;
+        $evaluation->knowledge = $request->knowledge;
+        $evaluation->skills = $request->skills;
+        $evaluation->global_appreciation = $request->global_appreciation;
+         // caluclate the total mark
+         $total = $request->general + $request->initiative + $request->imagination  + $request->knowledge + $request->skills;
+         $evaluation->total_mark = $total;
+         $evaluation->save();
+         return response()->json(['message' => 'success']);
+
+    }
+    // get students to mark new attendance 
+    public function getSupervisorStudents(Request $request)
+{
+    // Get the logged-in supervisor
+    $supervisor = $request->user();
+
+    // Get the supervisor's internship
+    $internship = Internship::where('supervisor_id', $supervisor->id)->first();
+
+    // Get the students who applied to the internship and have been approved by the admin and supervisor
+    $students = $internship->applications()
+        ->where('admin_status', 'approved') // Filter by admin acceptance
+        ->where('supervisor_status', 'approved') // Filter by supervisor acceptance
+        ->with('student') // Eager load the student relationship
+        ->get()
+        ->pluck('student'); // Get only the students
+
+    return $students;
 }
+
+public function genererPdf(Request $request)
+    {
+        $array = DB::table('ETUDIANT')
+            ->where('ETUDIANT.id_Etud', '=', $request->id_Etud)
+            ->join('STAGE', 'ETUDIANT.id_Etud', '=', 'STAGE.id_Etud')
+            ->join('OFFRE', 'OFFRE.id_Offre', '=', 'STAGE.id_Offre')
+            ->join('RESPONSABLE', 'RESPONSABLE.id_Resp', '=', 'OFFRE.id_Resp')
+            ->join('ENTREPRISE', 'OFFRE.id_Entreprise', '=', 'ENTREPRISE.id_Entreprise')
+            ->select([
+                'ETUDIANT.id_Etud',
+                'nom_Etud',
+                'pre_Etud',
+                'dateDeb',
+                'dateFin',
+                'dateNaiss',
+                'lieuNaiss',
+                'specialite',
+                'nom_Resp',
+                'pre_Resp',
+                'addr_Entreprise',
+                'theme',
+                'diplome',
+                'nom_Entreprise'
+            ])
+            ->get();
+        $array = json_decode($array, true);
+            
+        $certificate = Certificate::where('id_Etud', $request->id_Etud)
+        ->where('id_Stage', $resuest->id_Stage)
+        ->first();
+
+    if (!$certificate) {
+        $certificate = new Certificate();
+        $certificate->id_Etud = $resuest->id_Etud;
+        $certificate->id_Stage = $resuest->id_Stage;
+        $certificate->save();
+    }
+
+        $data_array = [
+            'nom' => $array[0]['nom_Etud'],
+            'prenom' => $array[0]['pre_Etud'],
+            'theme' => $array[0]['theme'],
+            'dateDeb' => $array[0]['dateDeb'],
+            'dateFin' => $array[0]['dateFin'],
+            'dateNaiss' => $array[0]['dateNaiss'],
+            'lieuNaiss' => $array[0]['lieuNaiss'],
+            'specialite' => $array[0]['specialite'],
+            'diplome' => $array[0]['diplome'],
+            'nom_Resp' => $array[0]['nom_Resp'],
+            'pre_Resp' => $array[0]['pre_Resp'],
+            'addr_Entreprise' => $array[0]['addr_Entreprise'],
+            'nom_Entreprise' => $array[0]['nom_Entreprise'],
+            'date' => $currentDateTime = Carbon::now()->format('Y-m-d'),
+            'token' => $certificate->token,
+        ];
+
+
+        $pdf = PDF::loadView('pdf', $data_array);
+        // Output the generated PDF to Browser
+        Notification::insert([
+            'destinataire' => 'etudiant',
+            'id_Destinataire' => $array[0]['id_Etud'],
+            'message' => 'votre attestation est prete'
+        ]);
+
+
+
+        return $pdf->stream();
+
+    }
 }

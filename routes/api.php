@@ -12,6 +12,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\UsersController;
 use App\Http\Middleware\CorsMiddleware;
+use App\Models\Certificate;
 use App\Mail\WelcomeEmail;
 
 
@@ -27,6 +28,40 @@ use App\Mail\WelcomeEmail;
 */
 
 //all roles can access these routes
+// check the certificate token and return the certificate data if it exists (inline function)
+Route::get('/certificate', function (Request $request) {
+    $certificate = Certificate::where('token', $request->token)->first();
+if ($certificate) {
+    $student = $certificate->student;
+    $internship = $certificate->internship;
+
+        return response()->json([
+            'student' => $student,
+            'internship' => $internship,
+        ], 200);
+    } else {
+        return response()->json([
+            'message' => 'Certificate not found',
+        ], 404);
+    }
+});
+// getOrCreate the certificate token and return the certificate data if it exists (inline function)
+Route::post('/certificate', function (Request $resuest){
+    $certificate = Certificate::where('student_id', $resuest->student_id)
+        ->where('internship_id', $resuest->internship_id)
+        ->first();
+
+    if (!$certificate) {
+        $certificate = new Certificate();
+        $certificate->student_id = $resuest->student_id;
+        $certificate->internship_id = $resuest->internship_id;
+        $certificate->save();
+        return $certificate;
+    }else {
+        return $certificate;
+    }
+});
+    
 // test the email sender by sending a welcome email to the logged in user
 
 
@@ -47,10 +82,8 @@ Route::middleware('auth:sanctum')->post('/notifications/markAllAsRead', [Notific
 
 // accept student id and download the student's cv from the storage/app/public/cvs/profile_cvs/user_id
 Route::middleware('auth:sanctum')->get('/downloadCV', [UsersController::class, 'downloadCV']);
-
 // update the logged in users's profile picture
 Route::middleware('auth:sanctum')->post('/updateProfilePicture', [UsersController::class, 'updateProfilePicture']);
-
 
 
 
@@ -117,6 +150,14 @@ Route::middleware('auth:sanctum','student')->group(function () {
     Route::get('/applications', [StudentController::class, 'getStudentApplications']);
     // get all feedbacks for the given application
     Route::get('/applicationFeedbacks', [StudentController::class, 'getApplicationFeedbacks']);
+    // upload the student's CV 
+    Route::post('/uploadCV', [StudentController::class, 'uploadCV']);
+    // get student Evaluation
+    Route::get('/studentEvaluation', [StudentController::class, 'getStudentEvaluation']);
+    // get student attendance
+    Route::get('/studentAttendance', [StudentController::class, 'getStudentAttendance']);
+    // create internship
+    Route::post('/studentNewInternship', [StudentController::class, 'createInternship']);
     });
 
 // ============================================================
@@ -143,5 +184,14 @@ Route::middleware('auth:sanctum','supervisor')->group(function () {
     Route::post('/supervisorAcceptApplication', [SupervisorController::class, 'acceptApplication']);
     // reject an internship application
     Route::post('/supervisorRejectApplication', [SupervisorController::class, 'rejectApplication']);                                                                                                        
-
+    // get all evaluations for the logged in supervisor
+    Route::get('/evaluations', [SupervisorController::class, 'getEvaluations']);
+    // edit an evaluation
+    Route::post('/editEvaluation', [SupervisorController::class, 'editEvaluation']);
+    // create a new evaluation
+    Route::post('/createEvaluation', [SupervisorController::class, 'createEvaluation']);
+    // get all students who applied to internships in the logged in supervisor's company and are accepted by the admin and the supervisor
+    Route::get('/acceptedStudents', [SupervisorController::class, 'getAcceptedStudents']);
+    // get supervisor's students to mark atttendance for
+    Route::get('/supervisorStudents', [SupervisorController::class, 'getSupervisorStudents']);
 });

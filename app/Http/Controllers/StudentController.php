@@ -13,13 +13,17 @@ use App\Models\Department;
 use App\Models\Company;
 use App\Models\Internship;
 use App\Models\Application;
+use App\Models\Evaluation;
+use App\Models\Attendance;
 use App\Models\Feedback;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\WelcomeEmail;
-
+// import the supervisorpassword email
+use App\Mail\SupervisorPassword;
+use Illuminate\Support\Str;
 class StudentController extends Controller
 {
     // sign up a new student (validate the request and create a new user record and a new student record) and return the token
@@ -59,17 +63,23 @@ class StudentController extends Controller
 
 
     // get all internships in the same department as the logged in student
-    public function getStudentInterns (Request $request)
+    public function getStudentInterns(Request $request)
     {
         $user = $request->user();
         $student = Student::where('id', $user->id)->first();
         $department = Department::where('id', $student->department_id)->first();
         $internships = Internship::join('internship_department', 'internship_department.internship_id', '=', 'internships.id')
-            ->join('supervisors','supervisors.id','=','internships.supervisor_id')
-            ->join('companies','companies.id','=','internships.company_id')
-            ->join('users','users.id','=','supervisors.id')
+            ->join('supervisors', 'supervisors.id', '=', 'internships.supervisor_id')
+            ->join('companies', 'companies.id', '=', 'internships.company_id')
+            ->join('users', 'users.id', '=', 'supervisors.id')
             ->where('internship_department.department_id', $department->id)
-            ->select('internships.*','companies.name as company_name', 'companies.email as company_email','companies.phone_number as company_phone_number','companies.bio as company_bio','companies.address as address', 'supervisors.fname as supervisor_fname','supervisors.lname as supervisor_lname', 'users.email as supervisor_email','supervisors.phone_number as supervisor_phone_number','supervisors.bio as supervisor_bio','supervisors.location as supervisor.location')
+            ->whereNotExists(function ($query) use ($student) {
+                $query->select(DB::raw(1))
+                    ->from('applications')
+                    ->whereRaw('applications.internship_id = internships.id')
+                    ->whereRaw('applications.student_id = ?', [$student->id]);
+            })
+            ->select('internships.*', 'companies.name as company_name', 'companies.email as company_email', 'companies.phone_number as company_phone_number', 'companies.bio as company_bio', 'companies.address as address', 'supervisors.fname as supervisor_fname', 'supervisors.lname as supervisor_lname', 'users.email as supervisor_email', 'supervisors.phone_number as supervisor_phone_number', 'supervisors.bio as supervisor_bio', 'supervisors.location as supervisor.location')
             ->get();
         return response()->json($internships);
     }
@@ -149,11 +159,103 @@ class StudentController extends Controller
             return response()->json(['error' => 'You are not authorized to view this feedback'], 400);
         }
     }
-
-
-    
-
-
-
-
+     // upload the student's CV to the storage/app/public/cvs/profile_cvs/user_id
+     public function uploadCV(Request $request)
+     {
+         $request->validate([
+             'cv' => 'required|mimes:pdf|max:2048'
+         ]);
+         $user = $request->user();
+         $student = Student::where('id', $user->id)->first();
+         $cvName = $user->id.'.'.$request->cv->extension();
+         $request->cv->move(storage_path('app/public/cvs/profile_cvs/'), $cvName);
+         $student->cv_path = $cvName;
+         $student->save();
+         return response()->json(['message' => 'CV uploaded successfully']);
+     }
+    //  get the student evaluation for the internship where he has been accepted
+    public function getStudentEvaluation (Request $request)
+    {
+        $user = $request->user();
+            $evaluation = Evaluation::where('student_id', $user->id)
+            ->first();
+            return response()->json($evaluation);
+    }
+    // get all attendance records for the logged in student
+    public function getStudentAttendance (Request $request)
+    {
+        $user = $request->user();
+        $student = Student::where('id', $user->id)->first();
+        $attendance = Attendance::where('student_id', $student->id)->get();
+        return response()->json($attendance);
+    }
+    // create a new supervisor and a new company and a new internship and apply for it and generate a random password for the supervisor
+    public function createInternship (Request $request)
+    {
+        $request->validate([
+            'supervisor_fname' => 'required|string',
+            'supervisor_lname' => 'required|string',
+            'supervisor_email' => 'required|email|unique:users,email',
+            'supervisor_phone_number' => 'required|string',
+            'supervisor_bio' => 'required|string',
+            'supervisor_location' => 'required|string',
+            'company_name' => 'required|string',
+            'company_email' => 'required|email|unique:companies,email',
+            'company_phone_number' => 'required|string',
+            'company_bio' => 'required|string',
+            'company_address' => 'required|string',
+            'internship_position' => 'required|string',
+            'internship_description' => 'required|string',
+            'internship_start_date' => 'required|date',
+            'internship_end_date' => 'required|date'
+        ]);
+        $company = Company::create([
+            'name' => $request->company_name,
+            'email' => $request->company_email,
+            'phone_number' => $request->company_phone_number,
+            'bio' => $request->company_bio,
+            'address' => $request->company_address
+        ]);
+        // create a user record for the supervisor and generate a random password
+        $password = Str::random(8);
+        $user = User::create([
+            'email' => $request->supervisor_email,
+            'password' => Hash::make($password),
+            'role' => 'supervisor'
+        ]);
+        $supervisor = Supervisor::create([
+            'id' => $user->id,
+            'fname' => $request->supervisor_fname,
+            'lname' => $request->supervisor_lname,
+            'phone_number' => $request->supervisor_phone_number,
+            'bio' => $request->supervisor_bio,
+            'location' => $request->supervisor_location,
+            'company_id' => $company->id
+        ]);
+        
+        $internship = Internship::create([
+            'position' => $request->internship_position,
+            'description' => $request->internship_description,
+            'start_date' => $request->internship_start_date,
+            'end_date' => $request->internship_end_date,
+            'supervisor_id' => $supervisor->id,
+            'location' => $request->internship_location,
+            'company_id' => $company->id,
+            'status' => 'open']);
+            $departments_ids = $request->departments;
+            // loop through the array of departments ids  and create a new internship_department record
+            foreach ($departments_ids as $department_id) {
+                $internship->departments()->attach($department_id);
+            }
+        // apply for the internship
+        
+        $student = Student::where('id', $request->user()->id)->first();
+        $application = Application::create([
+            'student_id' => $student->id,
+            'internship_id' => $internship->id,
+        ]);
+        // send an email to the supervisor with the generated password
+        Mail::to($user->email)->send(new SupervisorPassword($supervisor, $password));
+        return response()->json(['message' => 'Internship created successfully']);
+}
 }
