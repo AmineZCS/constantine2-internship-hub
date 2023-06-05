@@ -39,7 +39,6 @@
             margin-bottom: 20px;
             width: 40px;
             height: 40px;
-            float: right;
         }
         .qr-code img {
             max-width: 100%;

@@ -9,7 +9,7 @@ use App\Models\Supervisor;
 use App\Models\Admin;
 use App\Models\Company;
 use App\Models\Internship;
-use Barryvdh\DomPDF\Facade as PDF;
+use PDF;
 
 /*
 |--------------------------------------------------------------------------
