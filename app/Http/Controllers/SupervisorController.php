@@ -197,8 +197,14 @@ class SupervisorController extends Controller
         $internshipid = Internship::where('supervisor_id', $user->id)->first()->id;
         $date = $request->date;
         $attendance = Attendance::where('internship_id', $internshipid)
-        ->where('date', $date)
-        ->with('student')
+        // ->where('date', $date)
+        ->with(['student' => function ($query) {
+            $query->with(['user' => function ($query) {
+                $query->select('id', 'email');
+            }, 'department' => function ($query) {
+                $query->select('id', 'abbreviation');
+            }]);
+        }])
         ->get();
         return response()->json($attendance);
     }

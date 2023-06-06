@@ -5,6 +5,10 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use App\Models\User;
+use App\Models\Student;
+use App\Models\Internship;
+use App\Models\Supervisor;
+use App\Models\Company;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\SupervisorController;
@@ -46,16 +50,17 @@ if ($certificate) {
     }
 });
 // getOrCreate the certificate token and return the certificate data if it exists (inline function)
-Route::post('/certificate', function (Request $resuest){
-    $certificate = Certificate::where('student_id', $resuest->student_id)
-        ->where('internship_id', $resuest->internship_id)
+Route::post('/certificate', function (Request $request){
+    $certificate = Certificate::where('student_id', $request->student_id)
+        ->where('internship_id', $request->internship_id)
         ->first();
 
     if (!$certificate) {
         $certificate = new Certificate();
-        $certificate->student_id = $resuest->student_id;
-        $certificate->internship_id = $resuest->internship_id;
+        $certificate->student_id = $request->student_id;
+        $certificate->internship_id = $request->internship_id;
         $certificate->save();
+        $token = $certificate->token;
         return $certificate;
     }else {
         return $certificate;
@@ -194,4 +199,64 @@ Route::middleware('auth:sanctum','supervisor')->group(function () {
     Route::get('/acceptedStudents', [SupervisorController::class, 'getAcceptedStudents']);
     // get supervisor's students to mark atttendance for
     Route::get('/supervisorStudents', [SupervisorController::class, 'getSupervisorStudents']);
+});
+
+Route::get('/generateQRCodePDF/{token}', function ($token) {
+    
+    $frontendUrl = env('FRONTEND_URL');
+    $url = env('FRONTEND_URL') . '/certificate/' . $token;
+    $inputEncoding = mb_detect_encoding($url);
+$url = iconv($inputEncoding, 'UTF-8//IGNORE', $url);
+    // generate a qr code with the url (size is 50 and the format is png)
+    $qrCode = QrCode::format('svg')->size(70)->generate($url);
+    $qrCodePath = public_path('qrcodes/'.$token.'.svg');
+    // Save the QR code image locally
+file_put_contents($qrCodePath, $qrCode);
+    $html = view('certificate', ['qrCodePath' => $qrCodePath, 'token' => $token , 'url' => $url , 'frontendUrl' => $frontendUrl])->render();
+    $pdf = PDF::loadHTML($html);
+    $pdf->setPaper('a4', 'landscape');
+    return $pdf->stream('certificate.pdf');
+});
+
+// last route to generate a pdf using student_id and internship_id
+Route::post('/generatePDF', function (Request $request) {
+    $student = Student::where('id', $request->student_id)->first();
+    $internship = Internship::where('id', $request->internship_id)->first();
+    $supervisor = Supervisor::where('id', $internship->supervisor_id)->first();
+    $company = Company::where('id', $supervisor->company_id)->first();
+    $certificate = Certificate::where('student_id', $request->student_id)
+        ->where('internship_id', $request->internship_id)
+        ->first();
+
+    if (!$certificate) {
+        $certificate = new Certificate();
+        $certificate->student_id = $request->student_id;
+        $certificate->internship_id = $request->internship_id;
+        $certificate->save();
+    }
+        $token = $certificate->token;
+    $frontendUrl = env('FRONTEND_URL');
+    $url = env('FRONTEND_URL') . '/certificate/' . $token;
+    $inputEncoding = mb_detect_encoding($url);
+$url = iconv($inputEncoding, 'UTF-8//IGNORE', $url);
+    // generate a qr code with the url (size is 50 and the format is png)
+    $qrCode = QrCode::format('svg')->size(70)->generate($url);
+    $qrCodePath = public_path('qrcodes/'.$token.'.svg');
+    // Save the QR code image locally
+file_put_contents($qrCodePath, $qrCode);
+// create an array that will be passed to the view
+    $data_array = array(
+        'qrCodePath' => $qrCodePath,
+        'token' => $token,
+        'url' => $url,
+        'frontendUrl' => $frontendUrl,
+        'student' => $student,
+        'internship' => $internship,
+        'supervisor' => $supervisor,
+        'company' => $company
+    );
+    $html = view('certificate', $data_array)->render();
+    $pdf = PDF::loadHTML($html);
+    $pdf->setPaper('a4', 'landscape');
+    return $pdf->stream('certificate.pdf');
 });

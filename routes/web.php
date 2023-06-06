@@ -9,8 +9,8 @@ use App\Models\Supervisor;
 use App\Models\Admin;
 use App\Models\Company;
 use App\Models\Internship;
-use PDF;
-
+// use Barryvdh\DomPDF\Facade as PDF;
+use PDF as PDF;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -90,16 +90,25 @@ Route::get('internshipPic/{internshipId}', function ($internshipId) {
     return response()->file($path);
 });
 
-// Route::get('/generateQRCode/{token}', function ($token) {
-//     $url = env('FRONTEND_URL') . '/certificate/' . $token;
-//     $qrCode = QrCode::size(50)->generate($url);
-//     return view('certificate', ['qrCode' => $qrCode, 'token' => $token]);
-// });
-
 Route::get('/generateQRCode/{token}', function ($token) {
+    $frontendUrl = env('FRONTEND_URL');
     $url = env('FRONTEND_URL') . '/certificate/' . $token;
     $qrCode = QrCode::size(50)->generate($url);
-    $html = view('certificate', ['qrCode' => $qrCode, 'token' => $token])->render();
+    return view('certificate', ['qrCode' => $qrCode, 'token' => $token]);
+});
+
+Route::get('/generateQRCodePDF/{token}', function ($token) {
+    $frontendUrl = env('FRONTEND_URL');
+    $url = env('FRONTEND_URL') . '/certificate/' . $token;
+    $inputEncoding = mb_detect_encoding($url);
+$url = iconv($inputEncoding, 'UTF-8//IGNORE', $url);
+    // generate a qr code with the url (size is 50 and the format is png)
+    $qrCode = QrCode::format('svg')->size(70)->generate($url);
+    $qrCodePath = public_path('qrcodes/'.$token.'.svg');
+    // Save the QR code image locally
+file_put_contents($qrCodePath, $qrCode);
+    $html = view('certificate', ['qrCodePath' => $qrCodePath, 'token' => $token , 'url' => $url , 'frontendUrl' => $frontendUrl])->render();
     $pdf = PDF::loadHTML($html);
+    $pdf->setPaper('a4', 'landscape');
     return $pdf->stream('certificate.pdf');
 });
