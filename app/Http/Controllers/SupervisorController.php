@@ -190,46 +190,69 @@ class SupervisorController extends Controller
     
         return response()->json(['message' => 'success']);
     }
-    // get all students attendance for a specific date
-    public function getAttendance (Request $request)
+    // get all students attendance 
+    public function getAttendance(Request $request)
     {
         $user = $request->user();
         $internshipid = Internship::where('supervisor_id', $user->id)->first()->id;
-        $date = $request->date;
         $attendance = Attendance::where('internship_id', $internshipid)
-        // ->where('date', $date)
-        ->with(['student' => function ($query) {
-            $query->with(['user' => function ($query) {
-                $query->select('id', 'email');
-            }, 'department' => function ($query) {
-                $query->select('id', 'abbreviation');
-            }]);
-        }])
-        ->get();
+            ->when($request->input('date'), function ($query, $date) {
+                return $query->where('date', $date);
+            })
+            ->with(['student' => function ($query) {
+                $query->with(['user' => function ($query) {
+                    $query->select('id', 'email');
+                }, 'department' => function ($query) {
+                    $query->select('id', 'abbreviation');
+                }]);
+            }])
+            ->when($request->input('student_id'), function ($query, $student_id) {
+                return $query->where('student_id', $student_id);
+            })
+            ->get();
         return response()->json($attendance);
     }
+     // get all students attendance for a specific date
+     public function getAttendanceWithDate (Request $request)
+     {  
+        $date = $request->date;
+         $user = $request->user();
+         $internshipid = Internship::where('supervisor_id', $user->id)->first()->id;
+         $date = $request->date;
+         $attendance = Attendance::where('internship_id', $internshipid)
+         ->where('date', $date)
+         ->with(['student' => function ($query) {
+             $query->with(['user' => function ($query) {
+                 $query->select('id', 'email');
+             }, 'department' => function ($query) {
+                 $query->select('id', 'abbreviation');
+             }]);
+         }])
+         ->get();
+         return response()->json($attendance);
+     }
     // get all applications for the logged in supervisor (with the student details including his email)
-    public function getApplications (Request $request)
-    {
-        $user = $request->user();
-        $supervisor = Supervisor::where('id', $user->id)->first();
-        $internships = Internship::where('supervisor_id', $supervisor->id)->get();
-        $applications = [];
-        foreach ($internships as $internship) {
-            $internship_applications = $internship->applications()->with('student.user:id,email', 'student.department:id,abbreviation')->get();
-            foreach ($internship_applications as $application) {
-                $student_email = $application->student->user->email;
-                $department_abr = $application->student->department->abbreviation;
-                $application_data = $application->toArray();
-                $application_data['student']['email'] = $student_email;
-                $application_data['student']['department'] = $department_abr;
-                unset($application_data['student']['user']);
-                unset($application_data['student']['department_abr']);
-                $applications[] = $application_data;
-            }
+    public function getApplications(Request $request)
+{
+    $user = $request->user();
+    $supervisor = Supervisor::where('id', $user->id)->first();
+    $internships = Internship::where('supervisor_id', $supervisor->id)->get();
+    $applications = [];
+    foreach ($internships as $internship) {
+        $internship_applications = $internship->applications()->with('student.user:id,email', 'student.department:id,abbreviation')->where('admin_status', 'approved')->get();
+        foreach ($internship_applications as $application) {
+            $student_email = $application->student->user->email;
+            $department_abr = $application->student->department->abbreviation;
+            $application_data = $application->toArray();
+            $application_data['student']['email'] = $student_email;
+            $application_data['student']['department'] = $department_abr;
+            unset($application_data['student']['user']);
+            unset($application_data['student']['department_abr']);
+            $applications[] = $application_data;
         }
-        return response()->json($applications);
     }
+    return response()->json($applications);
+}
     // accept internship application (change the supervisor status of the application)
     public function acceptApplication (Request $request)
     {

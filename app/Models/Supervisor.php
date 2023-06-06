@@ -56,6 +56,10 @@ class Supervisor extends Model
     {
         return $this->hasManyThrough(Application::class, Internship::class, 'supervisor_id', 'internship_id', 'id', 'id');
     }
-    
+    // user 
+    public function user()
+    {
+        return $this->belongsTo(User::class,'id','id');
+    }
 
 }

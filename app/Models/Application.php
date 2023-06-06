@@ -22,4 +22,8 @@ class Application extends Model
     {
         return $this->belongsToMany(Feedback::class, 'feedback_application');
     }
+    public function feedbackApplication()
+    {
+        return $this->hasMany(FeedbackApplication::class, 'application_id', 'id');
+    }
 }

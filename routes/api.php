@@ -183,6 +183,7 @@ Route::middleware('auth:sanctum','supervisor')->group(function () {
     Route::post('/markAttendance', [SupervisorController::class, 'markAttendance']);
     // get all attendance for the logged in supervisor
     Route::get('/attendance', [SupervisorController::class, 'getAttendance']);
+
     // get all internship applications for the logged in supervisor
     Route::get('/supervisorApplications',[SupervisorController::class, 'getApplications']);
     // accept an internship application
@@ -219,32 +220,33 @@ file_put_contents($qrCodePath, $qrCode);
 });
 
 // last route to generate a pdf using student_id and internship_id
-Route::post('/generatePDF', function (Request $request) {
+Route::get('/generatePDF', function (Request $request) {
     $student = Student::where('id', $request->student_id)->first();
-    $internship = Internship::where('id', $request->internship_id)->first();
-    $supervisor = Supervisor::where('id', $internship->supervisor_id)->first();
+    $internship = Internship::where('supervisor_id', $request->supervisor_id)
+        ->first();
+    $supervisor = Supervisor::where('id', $request->supervisor_id)->first();
     $company = Company::where('id', $supervisor->company_id)->first();
     $certificate = Certificate::where('student_id', $request->student_id)
-        ->where('internship_id', $request->internship_id)
+        ->where('internship_id', $internship->id)
         ->first();
 
     if (!$certificate) {
         $certificate = new Certificate();
         $certificate->student_id = $request->student_id;
-        $certificate->internship_id = $request->internship_id;
+        $certificate->internship_id = $internship->id;
         $certificate->save();
     }
-        $token = $certificate->token;
+    $token = $certificate->token;
     $frontendUrl = env('FRONTEND_URL');
     $url = env('FRONTEND_URL') . '/certificate/' . $token;
     $inputEncoding = mb_detect_encoding($url);
-$url = iconv($inputEncoding, 'UTF-8//IGNORE', $url);
+    $url = iconv($inputEncoding, 'UTF-8//IGNORE', $url);
     // generate a qr code with the url (size is 50 and the format is png)
     $qrCode = QrCode::format('svg')->size(70)->generate($url);
     $qrCodePath = public_path('qrcodes/'.$token.'.svg');
     // Save the QR code image locally
-file_put_contents($qrCodePath, $qrCode);
-// create an array that will be passed to the view
+    file_put_contents($qrCodePath, $qrCode);
+    // create an array that will be passed to the view
     $data_array = array(
         'qrCodePath' => $qrCodePath,
         'token' => $token,

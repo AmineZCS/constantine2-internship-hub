@@ -129,14 +129,12 @@ class StudentController extends Controller
 
 
     // get all applications with company and internship details for the logged in student
-    public function getStudentApplications (Request $request)
+    public function getStudentApplications(Request $request)
     {
         $user = $request->user();
         $student = Student::where('id', $user->id)->first();
-        $applications = Application::join('internships', 'internships.id', '=', 'applications.internship_id')
-            ->join('companies', 'companies.id', '=', 'internships.company_id')
-            ->where('applications.student_id', $student->id)
-            ->select('applications.*', 'companies.name as company_name', 'internships.position as internship_position')
+        $applications = Application::with('internship.company', 'internship.supervisor.user', 'feedbackApplication.feedbacks')
+            ->where('student_id', $student->id)
             ->get();
         return response()->json($applications);
     }
