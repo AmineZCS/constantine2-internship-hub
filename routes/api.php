@@ -154,6 +154,8 @@ Route::middleware('auth:sanctum','student')->group(function () {
     Route::post('/apply', [StudentController::class, 'applyForInternship']);
     // get all applications for the logged in student
     Route::get('/applications', [StudentController::class, 'getStudentApplications']);
+    // get only accepted applications 
+    Route::get('/acceptedApplications', [StudentController::class, 'getAcceptedApplications']);
     // delete an application
     Route::post('/deleteApplication', [StudentController::class, 'deleteApplication']);
     // get all feedbacks for the given application

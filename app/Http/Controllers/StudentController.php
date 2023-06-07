@@ -110,6 +110,12 @@ class StudentController extends Controller
                 ->where('applications.id', $application->id)
                 ->select('applications.*', 'companies.name as company_name', 'internships.position as internship_position')
                 ->first();
+            // create a notification record for the supervisor
+            $notification = new Notification();
+            $notification->user_id = $internship->supervisor_id;
+            $notification->title = 'New Application';
+            $notification->message = 'You have a new application for the internship ' . $internship->position;
+            $notification->save();
             return response()->json($application);
         }else {
             return response()->json(['error' => 'Internship is not for your department'], 400);
@@ -191,9 +197,23 @@ class StudentController extends Controller
     {
         $user = $request->user();
             $evaluation = Evaluation::where('student_id', $user->id)
+            ->where('supervisor_id', $request->supervisor_id)
             ->first();
             return response()->json($evaluation);
     }
+
+    public function getAcceptedApplications(Request $request)
+{
+    $user = $request->user();
+    $student = Student::where('id', $user->id)->first();
+    $applications = Application::with('internship.supervisor')
+        ->where('student_id', $student->id)
+        ->where('supervisor_status', 'approved')
+        ->where('admin_status', 'approved')
+        ->get();
+
+    return response()->json($applications);
+}
     // get all attendance records for the logged in student
     public function getStudentAttendance (Request $request)
     {
