@@ -18,12 +18,13 @@ class Application extends Model
     {
         return $this->belongsTo(Internship::class, 'internship_id', 'id');
     }
-    public function feedbacks()
-    {
-        return $this->belongsToMany(Feedback::class, 'feedback_application');
-    }
+    
     public function feedbackApplication()
     {
         return $this->hasMany(FeedbackApplication::class, 'application_id', 'id');
+    }
+    public function feedbacks()
+    {
+        return $this->hasManyThrough(Feedback::class, FeedbackApplication::class, 'application_id', 'id', 'id', 'feedback_id');
     }
 }

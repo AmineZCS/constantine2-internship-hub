@@ -10,4 +10,5 @@ class FeedbackApplication extends Model
     use HasFactory;
     protected $table = 'feedback_application';
     protected $guarded = [];
+    
 }

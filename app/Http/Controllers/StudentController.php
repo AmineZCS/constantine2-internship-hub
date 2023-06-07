@@ -73,6 +73,7 @@ class StudentController extends Controller
             ->join('companies', 'companies.id', '=', 'internships.company_id')
             ->join('users', 'users.id', '=', 'supervisors.id')
             ->where('internship_department.department_id', $department->id)
+            ->where('supervisors.status', 'accepted')
             ->whereNotExists(function ($query) use ($student) {
                 $query->select(DB::raw(1))
                     ->from('applications')
@@ -133,12 +134,26 @@ class StudentController extends Controller
     {
         $user = $request->user();
         $student = Student::where('id', $user->id)->first();
-        $applications = Application::with('internship.company', 'internship.supervisor.user', 'feedbackApplication.feedbacks')
+        $applications = Application::with('internship.company', 'internship.supervisor.user', 'feedbacks')
             ->where('student_id', $student->id)
             ->get();
+    
         return response()->json($applications);
+    
     }
-
+    // delete an application
+    public function deleteApplication (Request $request)
+    {
+        $user = $request->user();
+        $student = Student::where('id', $user->id)->first();
+        $application = Application::where('id', $request->application_id)->first();
+        if ($application->student_id == $student->id) {
+            $application->delete();
+            return response()->json(['message' => 'Application deleted successfully']);
+        }else {
+            return response()->json(['error' => 'You are not authorized to delete this application'], 400);
+        }
+    }
 
     // get all feedbacks for the given application
     public function getApplicationFeedbacks (Request $request)

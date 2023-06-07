@@ -278,7 +278,7 @@ class AdminController extends Controller
                     'lname' => $student->lname,
                     'feedback' => $feedback_message->message,
                     'position' => $internship->position,
-                    'admin_name' => $admin->fname . ' ' . $admin->lname,
+                    'name' => $admin->fname . ' ' . $admin->lname,
                 ];
                 $receiver = User::where('id', $student->id)->first();
                 Mail::to($receiver->email)->send(new StudentApplicationDeclinedEmail($data));

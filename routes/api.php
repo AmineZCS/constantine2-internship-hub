@@ -78,7 +78,8 @@ Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logo
 
 //get profile infos based on the logged in user
 Route::middleware('auth:sanctum')->get('/user', [UsersController::class, 'getProfile']);
-
+// edit profile infos based on the logged in user
+Route::middleware('auth:sanctum')->post('/user', [UsersController::class, 'editProfile']);
 // get notifications for the logged in user
 Route::middleware('auth:sanctum')->get('/notifications', [NotificationController::class, 'getNotifications']);
 
@@ -153,6 +154,8 @@ Route::middleware('auth:sanctum','student')->group(function () {
     Route::post('/apply', [StudentController::class, 'applyForInternship']);
     // get all applications for the logged in student
     Route::get('/applications', [StudentController::class, 'getStudentApplications']);
+    // delete an application
+    Route::post('/deleteApplication', [StudentController::class, 'deleteApplication']);
     // get all feedbacks for the given application
     Route::get('/applicationFeedbacks', [StudentController::class, 'getApplicationFeedbacks']);
     // upload the student's CV 

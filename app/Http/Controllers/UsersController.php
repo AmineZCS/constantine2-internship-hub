@@ -46,6 +46,46 @@ class UsersController extends Controller
                break;
        }
    }
+//    edit profile informations based on the logged in user
+    public function editProfile(Request $request)
+    {
+         $role = $request->user()->role;
+         switch ($role) {
+              case 'admin':
+                $admin = Admin::where('id', $request->user()->id)->first();
+                $admin->fname = $request->fname;
+                $admin->lname = $request->lname;
+                $admin->phone_number = $request->phone_number;
+                $admin->location = $request->location;
+                $admin->bio = $request->bio;
+                $admin->save();
+                return response()->json(['message' => 'Profile updated successfully']);
+                break;
+                case 'supervisor':
+                $supervisor = Supervisor::where('id', $request->user()->id)->first();
+                $supervisor->fname = $request->fname;
+                $supervisor->lname = $request->lname;
+                $supervisor->phone_number = $request->phone_number;
+                $supervisor->location = $request->location;
+                $supervisor->bio = $request->bio;
+                $supervisor->save();
+                return response()->json(['message' => 'Profile updated successfully']);
+                break;
+                case 'student':
+                $student = Student::where('id', $request->user()->id)->first();
+                $student->fname = $request->fname;
+                $student->lname = $request->lname;
+                $student->phone_number = $request->phone_number;
+                $student->location = $request->location;
+                $student->bio = $request->bio;
+                $student->save();
+                return response()->json(['message' => 'Profile updated successfully']);
+                break;
+                default:
+                return response()->json(['message' => 'No role found'], 404);
+                break;
+            }
+    }
 
 
    // get all departments in an array of objects
