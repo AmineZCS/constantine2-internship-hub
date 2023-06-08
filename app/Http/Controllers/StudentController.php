@@ -219,7 +219,9 @@ class StudentController extends Controller
     {
         $user = $request->user();
         $student = Student::where('id', $user->id)->first();
-        $attendance = Attendance::where('student_id', $student->id)->get();
+        $attendance = Attendance::where('student_id', $student->id)
+        ->where('internship_id', $request->internship_id)
+        ->get();
         return response()->json($attendance);
     }
     // create a new supervisor and a new company and a new internship and apply for it and generate a random password for the supervisor

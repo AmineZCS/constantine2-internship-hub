@@ -38,10 +38,13 @@ Route::get('/certificate', function (Request $request) {
 if ($certificate) {
     $student = $certificate->student;
     $internship = $certificate->internship;
-
+    $company = $internship->company;
+    $supervisor = $internship->supervisor;
         return response()->json([
             'student' => $student,
             'internship' => $internship,
+            'company' => $company,
+            'supervisor' => $supervisor,
         ], 200);
     } else {
         return response()->json([
